@@ -2,7 +2,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ChevronRight, ChevronLeft } from "lucide-react";
+import { ChevronRight, ChevronLeft, Loader2 } from "lucide-react";
+import { saveFormSubmission } from "@/lib/firebase";
+import { useToast } from "@/hooks/use-toast";
 
 interface Question {
   id: number;
@@ -44,17 +46,34 @@ export function MultiStepForm() {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [isAnimating, setIsAnimating] = useState(false);
   const [animationDirection, setAnimationDirection] = useState<"in" | "out">("in");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
   const currentQuestion = questions[currentStep];
   const isLastStep = currentStep === questions.length - 1;
   const isFirstStep = currentStep === 0;
   const progress = ((currentStep + 1) / questions.length) * 100;
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (isLastStep) {
-      // Handle form submission
-      console.log("Form submitted:", answers);
-      alert("Formulário enviado! Obrigado.");
+      setIsSubmitting(true);
+      try {
+        await saveFormSubmission(answers);
+        toast({
+          title: "Formulário enviado!",
+          description: "Suas respostas foram salvas com sucesso.",
+        });
+        setAnswers({});
+        setCurrentStep(0);
+      } catch (error) {
+        toast({
+          title: "Erro ao enviar",
+          description: "Tente novamente mais tarde.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
       return;
     }
 
@@ -152,10 +171,19 @@ export function MultiStepForm() {
 
         <Button
           onClick={handleNext}
+          disabled={isSubmitting}
           className="bg-primary hover:bg-primary/90 text-primary-foreground px-6"
         >
-          {isLastStep ? "Enviar" : "Continuar"}
-          {!isLastStep && <ChevronRight className="w-5 h-5 ml-1" />}
+          {isSubmitting ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : isLastStep ? (
+            "Enviar"
+          ) : (
+            <>
+              Continuar
+              <ChevronRight className="w-5 h-5 ml-1" />
+            </>
+          )}
         </Button>
       </div>
     </div>
