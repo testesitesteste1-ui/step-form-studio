@@ -3,7 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { NavLink, useLocation } from "react-router-dom";
 import logo from "@/assets/logo.png";
 import {
-  LayoutDashboard, Users, ChevronLeft, ChevronRight, LogOut, Menu, X
+  LayoutDashboard, Users, UserCheck, ChevronLeft, ChevronRight, LogOut, Menu, X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { title: "Dashboard", path: "/", icon: LayoutDashboard },
   { title: "Leads & Propostas", path: "/leads", icon: Users },
+  { title: "Clientes", path: "/clients", icon: UserCheck },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
