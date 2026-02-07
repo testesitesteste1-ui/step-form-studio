@@ -1,21 +1,25 @@
-// Firebase Realtime Database - usando REST API
-const DATABASE_URL = "https://formulario-a515c-default-rtdb.firebaseio.com";
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { getDatabase, ref, push } from "firebase/database";
 
-export async function saveFormSubmission(answers: Record<number, string>) {
-  const response = await fetch(`${DATABASE_URL}/submissions.json`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      answers,
-      submittedAt: new Date().toISOString(),
-    }),
+const firebaseConfig = {
+  apiKey: "AIzaSyAjb9cS8TTH5omWbYbmFJorKd2ixirvRHc",
+  authDomain: "neurasys-e9418.firebaseapp.com",
+  databaseURL: "https://neurasys-e9418-default-rtdb.firebaseio.com",
+  projectId: "neurasys-e9418",
+  storageBucket: "neurasys-e9418.firebasestorage.app",
+  messagingSenderId: "1093846128296",
+  appId: "1:1093846128296:web:8d3bc41fe485f8fee9149d",
+};
+
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const database = getDatabase(app);
+
+export async function saveToDatabase(path: string, data: Record<string, unknown>) {
+  const dbRef = ref(database, path);
+  return push(dbRef, {
+    ...data,
+    createdAt: new Date().toISOString(),
   });
-
-  if (!response.ok) {
-    throw new Error("Erro ao salvar no Firebase");
-  }
-
-  return response.json();
 }
