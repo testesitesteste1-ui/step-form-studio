@@ -1,10 +1,10 @@
 import { Lead, STATUS_LABELS, STATUS_COLORS, formatCurrency, getDaysSince } from "@/lib/leads-data";
-import { Instagram, MessageCircle, Globe, UserPlus, Pencil, Trash2 } from "lucide-react";
+import { Briefcase, Megaphone, Globe, UserPlus, Pencil, Trash2 } from "lucide-react";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
 const originIcons: Record<string, React.ElementType> = {
-  instagram: Instagram, whatsapp: MessageCircle, site: Globe, indicacao: UserPlus,
+  getninjas: Briefcase, trafego_pago: Megaphone, site: Globe, indicacao: UserPlus,
 };
 
 interface Props {
