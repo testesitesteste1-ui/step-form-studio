@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Lead, LeadStatus, STATUS_LABELS, SERVICE_COLORS, formatCurrency } from "@/lib/leads-data";
+import { Lead, LeadStatus, LeadOrigin, STATUS_LABELS, ORIGIN_LABELS, SERVICE_COLORS, formatCurrency } from "@/lib/leads-data";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle
 } from "@/components/ui/dialog";
@@ -107,6 +107,17 @@ export default function LeadModal({ lead, open, onClose, onSave }: Props) {
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {Object.entries(STATUS_LABELS).map(([k, v]) => (
+                      <SelectItem key={k} value={k}>{v}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">Origem</label>
+                <Select value={editedLead.origin} onValueChange={v => update({ origin: v as LeadOrigin })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(ORIGIN_LABELS).map(([k, v]) => (
                       <SelectItem key={k} value={k}>{v}</SelectItem>
                     ))}
                   </SelectContent>
