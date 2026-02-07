@@ -23,6 +23,7 @@ interface Props {
 export default function LeadModal({ lead, open, onClose, onSave }: Props) {
   const [editedLead, setEditedLead] = useState<Lead | null>(lead);
   const [newInteraction, setNewInteraction] = useState({ type: 'nota' as const, description: '' });
+  const [saving, setSaving] = useState(false);
 
   // Sync when lead changes
   if (lead && editedLead?.id !== lead.id) {
@@ -33,9 +34,18 @@ export default function LeadModal({ lead, open, onClose, onSave }: Props) {
 
   const update = (partial: Partial<Lead>) => setEditedLead({ ...editedLead, ...partial });
 
-  const handleSave = () => {
-    onSave(editedLead);
-    toast({ title: "Lead salvo com sucesso!" });
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await onSave(editedLead);
+      toast({ title: "Lead salvo com sucesso!" });
+      onClose();
+    } catch (error) {
+      console.error("Erro ao salvar lead:", error);
+      toast({ title: "Erro ao salvar lead", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const addInteraction = () => {
