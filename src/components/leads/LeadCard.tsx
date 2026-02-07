@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Lead, SERVICE_COLORS, formatCurrency, getDaysSince } from "@/lib/leads-data";
-import { Instagram, MessageCircle, Globe, UserPlus, Mail, Pencil, Trash2 } from "lucide-react";
+import { Briefcase, Megaphone, Globe, UserPlus, MessageCircle, Mail, Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const originIcons: Record<string, React.ElementType> = {
-  instagram: Instagram,
-  whatsapp: MessageCircle,
+  getninjas: Briefcase,
+  trafego_pago: Megaphone,
   site: Globe,
   indicacao: UserPlus,
 };

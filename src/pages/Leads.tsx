@@ -116,8 +116,8 @@ export default function Leads() {
           <SelectTrigger className="w-full sm:w-40"><SelectValue placeholder="Origem" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas Origens</SelectItem>
-            <SelectItem value="instagram">Instagram</SelectItem>
-            <SelectItem value="whatsapp">WhatsApp</SelectItem>
+            <SelectItem value="getninjas">GetNinjas</SelectItem>
+            <SelectItem value="trafego_pago">Tráfego Pago</SelectItem>
             <SelectItem value="site">Site</SelectItem>
             <SelectItem value="indicacao">Indicação</SelectItem>
           </SelectContent>

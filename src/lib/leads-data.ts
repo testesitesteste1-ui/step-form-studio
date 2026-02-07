@@ -1,5 +1,5 @@
 export type LeadStatus = 'novo' | 'em_contato' | 'proposta_enviada' | 'negociacao' | 'ganho' | 'perdido';
-export type LeadOrigin = 'instagram' | 'whatsapp' | 'site' | 'indicacao';
+export type LeadOrigin = 'getninjas' | 'trafego_pago' | 'indicacao' | 'site';
 export type LeadService = 'Marketing' | 'Desenvolvimento' | 'Social Media' | 'Design' | 'Consultoria';
 
 export interface Interaction {
@@ -62,9 +62,16 @@ export const SERVICE_COLORS: Record<LeadService, string> = {
   Consultoria: 'bg-lime-500/20 text-lime-400',
 };
 
+export const ORIGIN_LABELS: Record<LeadOrigin, string> = {
+  getninjas: 'GetNinjas',
+  trafego_pago: 'Tráfego Pago',
+  indicacao: 'Indicação',
+  site: 'Site',
+};
+
 export const ORIGIN_ICONS: Record<LeadOrigin, string> = {
-  instagram: 'Instagram',
-  whatsapp: 'MessageCircle',
+  getninjas: 'Briefcase',
+  trafego_pago: 'Megaphone',
   site: 'Globe',
   indicacao: 'UserPlus',
 };
@@ -86,7 +93,7 @@ export const MOCK_LEADS: Lead[] = [
     id: '1', name: 'João Silva', company: 'TechCorp', email: 'joao@techcorp.com',
     phone: '(11) 99999-1111', whatsapp: '5511999991111',
     services: ['Marketing', 'Social Media'], estimatedValue: 8500,
-    origin: 'instagram', status: 'novo', entryDate: daysAgo(2), nextFollowUp: daysFromNow(1),
+    origin: 'trafego_pago', status: 'novo', entryDate: daysAgo(2), nextFollowUp: daysFromNow(1),
     interactions: [
       { id: '1a', date: daysAgo(2), type: 'whatsapp', description: 'Primeiro contato via DM do Instagram' }
     ],
@@ -120,7 +127,7 @@ export const MOCK_LEADS: Lead[] = [
     id: '4', name: 'Ana Beatriz', company: 'Loja Virtual AB', email: 'ana@lojaab.com',
     phone: '(41) 96666-4444', whatsapp: '5541966664444',
     services: ['Desenvolvimento', 'Design'], estimatedValue: 35000,
-    origin: 'whatsapp', status: 'negociacao', entryDate: daysAgo(15), nextFollowUp: daysFromNow(3),
+    origin: 'getninjas', status: 'negociacao', entryDate: daysAgo(15), nextFollowUp: daysFromNow(3),
     interactions: [
       { id: '4a', date: daysAgo(15), type: 'whatsapp', description: 'Contato via WhatsApp' },
       { id: '4b', date: daysAgo(12), type: 'reuniao', description: 'Reunião online - Zoom' },
@@ -134,7 +141,7 @@ export const MOCK_LEADS: Lead[] = [
     id: '5', name: 'Roberto Costa', company: 'Costa Imóveis', email: 'roberto@costaimoveis.com',
     phone: '(11) 95555-5555', whatsapp: '5511955555555',
     services: ['Social Media', 'Marketing'], estimatedValue: 5000,
-    origin: 'instagram', status: 'ganho', entryDate: daysAgo(20), nextFollowUp: '',
+    origin: 'trafego_pago', status: 'ganho', entryDate: daysAgo(20), nextFollowUp: '',
     interactions: [
       { id: '5a', date: daysAgo(20), type: 'whatsapp', description: 'DM Instagram' },
       { id: '5b', date: daysAgo(15), type: 'reuniao', description: 'Apresentação de portfólio' },
@@ -170,7 +177,7 @@ export const MOCK_LEADS: Lead[] = [
     id: '8', name: 'Patricia Santos', company: 'PS Marketing', email: 'patricia@psmarket.com',
     phone: '(21) 92222-8888', whatsapp: '5521922228888',
     services: ['Marketing'], estimatedValue: 7500,
-    origin: 'whatsapp', status: 'em_contato', entryDate: daysAgo(4), nextFollowUp: daysFromNow(1),
+    origin: 'getninjas', status: 'em_contato', entryDate: daysAgo(4), nextFollowUp: daysFromNow(1),
     interactions: [
       { id: '8a', date: daysAgo(4), type: 'whatsapp', description: 'Contato via WhatsApp Business' },
       { id: '8b', date: daysAgo(2), type: 'reuniao', description: 'Call de briefing' }
