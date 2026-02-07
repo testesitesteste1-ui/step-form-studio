@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import logo from "@/assets/logo.png";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -39,13 +40,13 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-sm animate-fade-in">
-        {/* Logo placeholder */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">NeuraSys</h1>
-          <p className="text-muted-foreground text-sm mt-1">Acesse sua conta</p>
+        {/* Logo */}
+        <div className="flex flex-col items-center mb-10">
+          <img src={logo} alt="NeuraSys" className="w-24 h-24 object-contain mb-3" />
+          <p className="text-muted-foreground text-sm">Acesse sua conta</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
             <Label htmlFor="email" className="text-sm text-muted-foreground">Email</Label>
             <Input
@@ -55,7 +56,7 @@ export default function Login() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="seu@email.com"
               required
-              className="h-12 bg-card border-border"
+              className="h-12 bg-card border-border focus:border-primary focus:ring-primary"
               autoFocus
             />
           </div>
@@ -69,7 +70,7 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               required
-              className="h-12 bg-card border-border"
+              className="h-12 bg-card border-border focus:border-primary focus:ring-primary"
             />
           </div>
 
@@ -80,7 +81,7 @@ export default function Login() {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
+            className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
           >
             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Entrar"}
           </Button>
