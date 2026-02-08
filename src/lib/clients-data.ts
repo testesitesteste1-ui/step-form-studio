@@ -59,11 +59,29 @@ export interface ProjectPayment {
   date: string;
 }
 
+export interface ProjectCost {
+  id: string;
+  description: string;
+  value: number;
+  date: string;
+  category: string; // ex: 'freelancer', 'software', 'ads', 'infraestrutura', 'outros'
+}
+
+export const PROJECT_COST_CATEGORIES: Record<string, string> = {
+  freelancer: 'Freelancer',
+  software: 'Software/Ferramenta',
+  ads: 'Anúncios/Ads',
+  infraestrutura: 'Infraestrutura',
+  material: 'Material',
+  outros: 'Outros',
+};
+
 export interface Project {
   id: string;
   name: string;
   description: string;
   value: number;
+  cost: number; // custo estimado do projeto
   paidAmount: number;
   status: ProjectStatus;
   startDate: string;
@@ -71,6 +89,7 @@ export interface Project {
   notes: ProjectNote[];
   links: ProjectLink[];
   payments: ProjectPayment[];
+  costs: ProjectCost[]; // custos reais do projeto
 }
 
 export interface Client {

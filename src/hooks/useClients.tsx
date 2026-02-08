@@ -18,7 +18,9 @@ function parseProject(value: any): any {
     links: toArray(value.links),
     notes: toArray(value.notes),
     payments: toArray(value.payments),
+    costs: toArray(value.costs),
     value: Number(value.value) || 0,
+    cost: Number(value.cost) || 0,
     paidAmount: Number(value.paidAmount) || 0,
   };
 }
