@@ -16,12 +16,13 @@ import {
 
 interface Props {
   client: Client;
+  initialTab?: string;
   onBack: () => void;
   onUpdate: (client: Client) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }
 
-export default function ClientDetail({ client, onBack, onUpdate, onDelete }: Props) {
+export default function ClientDetail({ client, initialTab = 'projetos', onBack, onUpdate, onDelete }: Props) {
   const { toast } = useToast();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const avatarColor = getAvatarColor(client.name);
@@ -78,7 +79,7 @@ export default function ClientDetail({ client, onBack, onUpdate, onDelete }: Pro
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="projetos" className="w-full">
+      <Tabs defaultValue={initialTab} className="w-full">
         <TabsList className="w-full justify-start overflow-x-auto">
           <TabsTrigger value="projetos">Projetos</TabsTrigger>
           <TabsTrigger value="informacoes">Informações</TabsTrigger>

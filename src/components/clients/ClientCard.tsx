@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Star, DollarSign } from "lucide-react";
+import { Star, DollarSign, Pencil } from "lucide-react";
 import { Client, CLIENT_STATUS_LABELS, CLIENT_STATUS_COLORS, CLIENT_STATUS_ICONS, CLIENT_SERVICE_LABELS, getAvatarColor, getInitials, formatCurrency } from "@/lib/clients-data";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -7,10 +7,11 @@ import { cn } from "@/lib/utils";
 interface Props {
   client: Client;
   onOpen: () => void;
+  onEdit: () => void;
   onToggleFavorite: () => void;
 }
 
-export default function ClientCard({ client, onOpen, onToggleFavorite }: Props) {
+export default function ClientCard({ client, onOpen, onEdit, onToggleFavorite }: Props) {
   const totalValue = client.projects.reduce((sum, p) => sum + (p.value || 0), 0);
   const totalPaid = client.projects.reduce((sum, p) => sum + ((p.payments || []).reduce((s, pay) => s + pay.value, 0)), 0);
   const remaining = totalValue - totalPaid;
@@ -70,6 +71,13 @@ export default function ClientCard({ client, onOpen, onToggleFavorite }: Props) 
         <Button onClick={onOpen} className="flex-1" size="sm">
           Ver Detalhes
         </Button>
+        <button
+          onClick={(e) => { e.stopPropagation(); onEdit(); }}
+          className="p-2 rounded-lg hover:bg-secondary transition-colors"
+          title="Editar cliente"
+        >
+          <Pencil className="w-4 h-4 text-muted-foreground hover:text-primary transition-colors" />
+        </button>
         <button
           onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
           className="p-2 rounded-lg hover:bg-secondary transition-colors"
