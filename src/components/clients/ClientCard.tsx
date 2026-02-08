@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Star, DollarSign } from "lucide-react";
-import { Client, CLIENT_STATUS_LABELS, CLIENT_STATUS_COLORS, CLIENT_STATUS_ICONS, getAvatarColor, getInitials, formatCurrency } from "@/lib/clients-data";
+import { Client, CLIENT_STATUS_LABELS, CLIENT_STATUS_COLORS, CLIENT_STATUS_ICONS, CLIENT_SERVICE_LABELS, getAvatarColor, getInitials, formatCurrency } from "@/lib/clients-data";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -37,6 +37,11 @@ export default function ClientCard({ client, onOpen, onToggleFavorite }: Props) 
           <div className="min-w-0">
             <h3 className="text-foreground font-semibold text-base truncate">{client.name}</h3>
             <p className="text-muted-foreground text-xs truncate">{client.company || client.segment || '—'}</p>
+            {client.service && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">
+                {CLIENT_SERVICE_LABELS[client.service]}
+              </span>
+            )}
           </div>
         </div>
       </div>

@@ -27,6 +27,7 @@ function parseClient(firebaseKey: string, value: any): Client {
   const projects = toArray(value.projects).map(parseProject);
   return {
     id: firebaseKey,
+    service: value.service || 'sistemas',
     name: value.name || '',
     company: value.company || '',
     segment: value.segment || '',

@@ -1,4 +1,5 @@
 export type ClientStatus = 'proposta' | 'ativo' | 'pausado' | 'finalizado' | 'perdido';
+export type ClientService = 'sistemas' | 'marketing' | 'marketing_sistemas';
 export type InteractionType = 'ligacao' | 'email' | 'whatsapp' | 'reuniao' | 'nota';
 export type ProjectStatus = 'negociando' | 'ativo' | 'pausado' | 'concluido';
 export type TaskPriority = 'baixa' | 'media' | 'alta' | 'urgente';
@@ -73,6 +74,7 @@ export interface Project {
 }
 
 export interface Client {
+  service: ClientService;
   id: string;
   name: string;
   company: string;
@@ -123,6 +125,12 @@ export const CLIENT_STATUS_ICONS: Record<ClientStatus, string> = {
   pausado: '⏸️',
   finalizado: '🎉',
   perdido: '❌',
+};
+
+export const CLIENT_SERVICE_LABELS: Record<ClientService, string> = {
+  sistemas: 'Sistemas',
+  marketing: 'Marketing',
+  marketing_sistemas: 'Marketing e Sistemas',
 };
 
 export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {

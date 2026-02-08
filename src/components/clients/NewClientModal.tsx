@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Client, ClientStatus, CLIENT_STATUS_LABELS } from "@/lib/clients-data";
+import { Client, ClientStatus, CLIENT_STATUS_LABELS, ClientService, CLIENT_SERVICE_LABELS } from "@/lib/clients-data";
 import { useToast } from "@/hooks/use-toast";
 
 interface Props {
@@ -20,6 +20,7 @@ export default function NewClientModal({ open, onClose, onSave }: Props) {
   const [form, setForm] = useState({
     name: '', company: '', email: '', phone: '',
     status: 'proposta' as ClientStatus, segment: '', observations: '',
+    service: 'sistemas' as ClientService,
   });
 
   const update = (key: string, value: string) => setForm(prev => ({ ...prev, [key]: value }));
@@ -42,7 +43,7 @@ export default function NewClientModal({ open, onClose, onSave }: Props) {
         projects: [], interactions: [], notes: [], documents: [],
       });
       toast({ title: "Cliente cadastrado!" });
-      setForm({ name: '', company: '', email: '', phone: '', status: 'proposta', segment: '', observations: '' });
+      setForm({ name: '', company: '', email: '', phone: '', status: 'proposta', segment: '', observations: '', service: 'sistemas' });
       onClose();
     } catch {
       toast({ title: "Erro ao cadastrar", variant: "destructive" });
@@ -88,6 +89,19 @@ export default function NewClientModal({ open, onClose, onSave }: Props) {
                 </SelectContent>
               </Select>
             </div>
+            <div>
+              <Label>Serviço</Label>
+              <Select value={form.service} onValueChange={v => update('service', v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(CLIENT_SERVICE_LABELS).map(([k, v]) => (
+                    <SelectItem key={k} value={k}>{v}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Segmento</Label>
               <Input value={form.segment} onChange={e => update('segment', e.target.value)} placeholder="Área de atuação" />
