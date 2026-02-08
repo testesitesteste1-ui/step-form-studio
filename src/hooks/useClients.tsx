@@ -47,6 +47,8 @@ function parseClient(firebaseKey: string, value: any): Client {
     city: value.city || '',
     state: value.state || '',
     status: value.status || 'proposta',
+    private: value.private || false,
+    createdBy: value.createdBy || '',
     observations: value.observations || '',
     favorite: value.favorite || false,
     createdAt: value.createdAt || new Date().toISOString(),

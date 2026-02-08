@@ -7,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Client, ClientStatus, CLIENT_STATUS_LABELS, ClientService, CLIENT_SERVICE_LABELS } from "@/lib/clients-data";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { Switch } from "@/components/ui/switch";
 
 interface Props {
   open: boolean;
@@ -16,11 +18,12 @@ interface Props {
 
 export default function NewClientModal({ open, onClose, onSave }: Props) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     name: '', company: '', email: '', phone: '',
     status: 'proposta' as ClientStatus, segment: '', observations: '',
-    service: 'sistemas' as ClientService,
+    service: 'sistemas' as ClientService, isPrivate: false,
   });
 
   const update = (key: string, value: string) => setForm(prev => ({ ...prev, [key]: value }));
@@ -34,6 +37,8 @@ export default function NewClientModal({ open, onClose, onSave }: Props) {
     try {
       await onSave({
         ...form,
+        private: form.isPrivate,
+        createdBy: user?.uid || '',
         cpfCnpj: '', phoneAlt: '', whatsapp: form.phone, site: '',
         cep: '', street: '', number: '', complement: '',
         neighborhood: '', city: '', state: '',
@@ -43,7 +48,7 @@ export default function NewClientModal({ open, onClose, onSave }: Props) {
         projects: [], interactions: [], notes: [], documents: [],
       });
       toast({ title: "Cliente cadastrado!" });
-      setForm({ name: '', company: '', email: '', phone: '', status: 'proposta', segment: '', observations: '', service: 'sistemas' });
+      setForm({ name: '', company: '', email: '', phone: '', status: 'proposta', segment: '', observations: '', service: 'sistemas', isPrivate: false });
       onClose();
     } catch {
       toast({ title: "Erro ao cadastrar", variant: "destructive" });
@@ -110,6 +115,13 @@ export default function NewClientModal({ open, onClose, onSave }: Props) {
           <div>
             <Label>Observações</Label>
             <Textarea value={form.observations} onChange={e => update('observations', e.target.value)} placeholder="Anotações gerais..." rows={3} />
+          </div>
+          <div className="flex items-center justify-between bg-secondary/50 rounded-lg p-3">
+            <div>
+              <p className="text-sm font-medium text-foreground">Cliente Privado</p>
+              <p className="text-xs text-muted-foreground">Apenas você poderá ver este cliente</p>
+            </div>
+            <Switch checked={form.isPrivate} onCheckedChange={v => setForm(prev => ({ ...prev, isPrivate: v }))} />
           </div>
           <Button onClick={handleSave} disabled={saving} className="w-full">
             {saving ? 'Cadastrando...' : 'Cadastrar Cliente'}

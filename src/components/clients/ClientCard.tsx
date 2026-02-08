@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Star, DollarSign, Pencil } from "lucide-react";
+import { Star, DollarSign, Pencil, Lock } from "lucide-react";
 import { Client, CLIENT_STATUS_LABELS, CLIENT_STATUS_COLORS, CLIENT_STATUS_ICONS, CLIENT_SERVICE_LABELS, getAvatarColor, getInitials, formatCurrency } from "@/lib/clients-data";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -26,6 +26,11 @@ export default function ClientCard({ client, onOpen, onEdit, onToggleFavorite }:
       {/* Header */}
       <div className="p-5 pb-3 relative">
         <div className="absolute top-4 right-4 flex items-center gap-1">
+          {client.private && (
+            <span className="text-xs px-1.5 py-0.5 rounded-full border border-muted bg-muted text-muted-foreground font-medium flex items-center gap-1">
+              <Lock className="w-3 h-3" /> Privado
+            </span>
+          )}
           <span className={cn("text-xs px-2 py-0.5 rounded-full border font-medium", CLIENT_STATUS_COLORS[client.status])}>
             {CLIENT_STATUS_ICONS[client.status]} {CLIENT_STATUS_LABELS[client.status]}
           </span>
