@@ -59,9 +59,11 @@ export function useFinance() {
   }, []);
 
   const addTransaction = async (tx: Omit<Transaction, 'id'>) => {
+    // Firebase rejects undefined values – strip them
+    const clean = JSON.parse(JSON.stringify(tx));
     const txRef = ref(database, TRANSACTIONS_PATH);
     const newRef = push(txRef);
-    await set(newRef, tx);
+    await set(newRef, clean);
     return newRef.key!;
   };
 
