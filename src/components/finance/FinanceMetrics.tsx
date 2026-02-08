@@ -70,14 +70,22 @@ export default function FinanceMetrics({ clients, transactions, period }: Props)
     }, 0);
     const totalReceitasMes = receitasMes + projectPaymentsMes;
 
+    // Project costs this month (from project.costs array)
+    const projectCostsMes = allProjects.reduce((sum, p) => {
+      return sum + (p.costs || [])
+        .filter((c: any) => isInPeriod(c.date, monthStart, monthEnd))
+        .reduce((s: number, c: any) => s + (c.value || 0), 0);
+    }, 0);
+
     const despesasMes = transactions
       .filter(t => t.type === 'despesa' && t.status === 'pago' && isInPeriod(t.date, monthStart, monthEnd))
       .reduce((sum, t) => sum + t.value, 0);
 
-    const saldoMensal = totalReceitasMes - despesasMes;
+    const totalDespesasMes = despesasMes + projectCostsMes;
+    const saldoMensal = totalReceitasMes - totalDespesasMes;
 
-    // ─── CARD 6: Despesas do mês ───
-    const despesasProjeto = transactions.filter(t => t.type === 'despesa' && t.category === 'custo_projeto' && isInPeriod(t.date, monthStart, monthEnd)).reduce((s, t) => s + t.value, 0);
+    // ─── CARD 6: Despesas do mês breakdown ───
+    const despesasProjeto = transactions.filter(t => t.type === 'despesa' && t.category === 'custo_projeto' && isInPeriod(t.date, monthStart, monthEnd)).reduce((s, t) => s + t.value, 0) + projectCostsMes;
     const despesasFixas = transactions.filter(t => t.type === 'despesa' && t.category === 'despesa_fixa' && isInPeriod(t.date, monthStart, monthEnd)).reduce((s, t) => s + t.value, 0);
     const despesasVariaveis = transactions.filter(t => t.type === 'despesa' && t.category === 'despesa_variavel' && isInPeriod(t.date, monthStart, monthEnd)).reduce((s, t) => s + t.value, 0);
 
@@ -88,7 +96,7 @@ export default function FinanceMetrics({ clients, transactions, period }: Props)
       rendaParalela,
       saldoMensal, totalReceitasMes, despesasMes,
       despesasProjeto, despesasFixas, despesasVariaveis,
-      totalDespesasMes: despesasMes,
+      totalDespesasMes,
     };
   }, [clients, transactions, start, end]);
 

@@ -26,7 +26,7 @@ export default function ClientProjectsTab({ client, onUpdate }: Props) {
   const [newModal, setNewModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [form, setForm] = useState({
-    name: '', description: '', value: '', status: 'ativo' as ProjectStatus,
+    name: '', description: '', value: '', cost: '', status: 'ativo' as ProjectStatus,
     startDate: new Date().toISOString().split('T')[0],
   });
 
@@ -34,12 +34,13 @@ export default function ClientProjectsTab({ client, onUpdate }: Props) {
     if (!form.name.trim()) { toast({ title: "Nome é obrigatório", variant: "destructive" }); return; }
     const project: Project = {
       id: newId(), name: form.name, description: form.description,
-      value: parseFloat(form.value) || 0, paidAmount: 0, status: form.status,
-      startDate: form.startDate, tasks: [], notes: [], links: [], payments: [],
+      value: parseFloat(form.value) || 0, cost: parseFloat(form.cost) || 0,
+      paidAmount: 0, status: form.status,
+      startDate: form.startDate, tasks: [], notes: [], links: [], payments: [], costs: [],
     };
     await onUpdate({ ...client, projects: [...client.projects, project] });
     toast({ title: "Projeto criado!" });
-    setForm({ name: '', description: '', value: '', status: 'ativo', startDate: new Date().toISOString().split('T')[0] });
+    setForm({ name: '', description: '', value: '', cost: '', status: 'ativo', startDate: new Date().toISOString().split('T')[0] });
     setNewModal(false);
   };
 
@@ -140,9 +141,15 @@ export default function ClientProjectsTab({ client, onUpdate }: Props) {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label>Valor (R$)</Label>
-                <Input type="number" value={form.value} onChange={e => setForm({ ...form, value: e.target.value })} placeholder="0,00" />
+                <Label>Valor do Projeto (R$)</Label>
+                <Input type="number" value={form.value} onChange={e => setForm({ ...form, value: e.target.value })} placeholder="Valor cobrado" />
               </div>
+              <div>
+                <Label>Custo Estimado (R$)</Label>
+                <Input type="number" value={form.cost} onChange={e => setForm({ ...form, cost: e.target.value })} placeholder="Custo do projeto" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Status</Label>
                 <Select value={form.status} onValueChange={v => setForm({ ...form, status: v as ProjectStatus })}>

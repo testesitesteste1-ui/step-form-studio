@@ -3,14 +3,15 @@ import { motion } from "framer-motion";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import {
   ArrowLeft, Plus, Trash2, AlertTriangle, GripVertical,
-  Link as LinkIcon, DollarSign, Calendar, Edit2, CheckCircle2,
+  Link as LinkIcon, DollarSign, Calendar, Edit2, CheckCircle2, TrendingDown,
 } from "lucide-react";
 import {
-  Project, ProjectTask, ProjectNote, ProjectLink, ProjectPayment,
+  Project, ProjectTask, ProjectNote, ProjectLink, ProjectPayment, ProjectCost,
   TaskColumn, TaskPriority,
   PROJECT_STATUS_LABELS, PROJECT_STATUS_COLORS,
   TASK_COLUMN_LABELS, TASK_COLUMN_COLORS,
   TASK_PRIORITY_LABELS, TASK_PRIORITY_COLORS,
+  PROJECT_COST_CATEGORIES,
   formatCurrency, newId,
 } from "@/lib/clients-data";
 import { Button } from "@/components/ui/button";
@@ -40,15 +41,20 @@ export default function ProjectDetail({ project, onBack, onUpdate }: Props) {
   const [editingNote, setEditingNote] = useState<ProjectNote | null>(null);
   const [linkModal, setLinkModal] = useState(false);
   const [paymentModal, setPaymentModal] = useState(false);
+  const [costModal, setCostModal] = useState(false);
   const [taskForm, setTaskForm] = useState({
     title: '', description: '', column: 'todo' as TaskColumn, priority: 'media' as TaskPriority, dueDate: '',
   });
   const [noteContent, setNoteContent] = useState('');
   const [linkForm, setLinkForm] = useState({ title: '', url: '' });
   const [paymentForm, setPaymentForm] = useState({ description: '', value: '', date: new Date().toISOString().split('T')[0] });
+  const [costForm, setCostForm] = useState({ description: '', value: '', date: new Date().toISOString().split('T')[0], category: 'outros' });
 
   const totalPaid = (project.payments || []).reduce((sum, p) => sum + p.value, 0);
   const remaining = project.value - totalPaid;
+  const totalCosts = (project.costs || []).reduce((sum, c) => sum + c.value, 0);
+  const estimatedCost = project.cost || 0;
+  const profit = project.value - totalCosts;
   const completedTasks = project.tasks.filter(t => t.column === 'done').length;
   const urgentTasks = project.tasks.filter(t => t.priority === 'urgente' && t.column !== 'done');
   const progress = project.tasks.length > 0 ? (completedTasks / project.tasks.length) * 100 : 0;
@@ -141,6 +147,19 @@ export default function ProjectDetail({ project, onBack, onUpdate }: Props) {
     await onUpdate({ ...project, payments, paidAmount: payments.reduce((s, p) => s + p.value, 0) });
   };
 
+  // ─── Costs CRUD ───
+  const saveCost = async () => {
+    const val = parseFloat(costForm.value);
+    if (!val || !costForm.description.trim()) { toast({ title: "Preencha todos os campos", variant: "destructive" }); return; }
+    const costs = [...(project.costs || []), { id: newId(), description: costForm.description, value: val, date: costForm.date, category: costForm.category }];
+    await onUpdate({ ...project, costs });
+    toast({ title: "Custo registrado!" });
+    setCostForm({ description: '', value: '', date: new Date().toISOString().split('T')[0], category: 'outros' }); setCostModal(false);
+  };
+  const deleteCost = async (id: string) => {
+    await onUpdate({ ...project, costs: (project.costs || []).filter(c => c.id !== id) });
+  };
+
   return (
     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
       {/* Header */}
@@ -157,12 +176,13 @@ export default function ProjectDetail({ project, onBack, onUpdate }: Props) {
       </div>
 
       {/* Financial + Progress Summary */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
         {[
           { label: 'Valor Total', value: formatCurrency(project.value), color: 'text-primary' },
           { label: 'Pago', value: formatCurrency(totalPaid), color: 'text-emerald-400' },
           { label: 'Falta Pagar', value: formatCurrency(Math.max(0, remaining)), color: remaining > 0 ? 'text-orange-400' : 'text-emerald-400' },
-          { label: 'Tarefas', value: `${completedTasks}/${project.tasks.length}`, color: 'text-violet-400' },
+          { label: 'Custos', value: formatCurrency(totalCosts), color: 'text-red-400' },
+          { label: 'Lucro', value: formatCurrency(profit), color: profit >= 0 ? 'text-emerald-400' : 'text-red-400' },
         ].map((m, i) => (
           <div key={i} className="bg-card border border-border rounded-xl p-2.5 sm:p-3 text-center">
             <p className={cn("font-bold text-xs sm:text-sm", m.color)}>{m.value}</p>
@@ -337,40 +357,99 @@ export default function ProjectDetail({ project, onBack, onUpdate }: Props) {
         </TabsContent>
 
         {/* ─── FINANCIAL TAB ─── */}
-        <TabsContent value="financeiro" className="mt-3 space-y-4">
-          <div className="flex justify-end">
-            <Button size="sm" onClick={() => setPaymentModal(true)} className="gap-1 text-xs"><Plus className="w-4 h-4" /> Novo Pagamento</Button>
-          </div>
-          <div className="bg-card border border-border rounded-xl p-4">
-            <div className="flex justify-between text-sm mb-2">
-              <span className="text-muted-foreground">Progresso</span>
-              <span className="text-foreground font-medium">{project.value > 0 ? Math.round((totalPaid / project.value) * 100) : 0}%</span>
+        <TabsContent value="financeiro" className="mt-3 space-y-6">
+          {/* Pagamentos Section */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+                <DollarSign className="w-4 h-4 text-emerald-400" /> Pagamentos Recebidos
+              </h4>
+              <Button size="sm" onClick={() => setPaymentModal(true)} className="gap-1 text-xs"><Plus className="w-4 h-4" /> Pagamento</Button>
             </div>
-            <Progress value={project.value > 0 ? (totalPaid / project.value) * 100 : 0} className="h-2.5" />
-            <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-              <span>Pago: <span className="text-emerald-400 font-medium">{formatCurrency(totalPaid)}</span></span>
-              <span>Falta: <span className="text-orange-400 font-medium">{formatCurrency(Math.max(0, remaining))}</span></span>
+            <div className="bg-card border border-border rounded-xl p-4">
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-muted-foreground">Progresso</span>
+                <span className="text-foreground font-medium">{project.value > 0 ? Math.round((totalPaid / project.value) * 100) : 0}%</span>
+              </div>
+              <Progress value={project.value > 0 ? (totalPaid / project.value) * 100 : 0} className="h-2.5" />
+              <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+                <span>Pago: <span className="text-emerald-400 font-medium">{formatCurrency(totalPaid)}</span></span>
+                <span>Falta: <span className="text-orange-400 font-medium">{formatCurrency(Math.max(0, remaining))}</span></span>
+              </div>
             </div>
-          </div>
-          {(project.payments || []).length === 0 ? (
-            <p className="text-center text-muted-foreground py-8 text-sm">Nenhum pagamento registrado</p>
-          ) : (
-            <div className="space-y-2">
-              {[...(project.payments || [])].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(payment => (
-                <div key={payment.id} className="flex items-center gap-2 sm:gap-3 bg-secondary/50 rounded-lg p-3 group">
-                  <DollarSign className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-foreground text-xs sm:text-sm font-medium truncate">{payment.description}</p>
-                    <p className="text-muted-foreground text-[10px]">{new Date(payment.date).toLocaleDateString('pt-BR')}</p>
+            {(project.payments || []).length === 0 ? (
+              <p className="text-center text-muted-foreground py-4 text-sm">Nenhum pagamento registrado</p>
+            ) : (
+              <div className="space-y-2">
+                {[...(project.payments || [])].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(payment => (
+                  <div key={payment.id} className="flex items-center gap-2 sm:gap-3 bg-secondary/50 rounded-lg p-3 group">
+                    <DollarSign className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-foreground text-xs sm:text-sm font-medium truncate">{payment.description}</p>
+                      <p className="text-muted-foreground text-[10px]">{new Date(payment.date).toLocaleDateString('pt-BR')}</p>
+                    </div>
+                    <span className="text-emerald-400 font-bold text-xs sm:text-sm shrink-0">{formatCurrency(payment.value)}</span>
+                    <button onClick={() => deletePayment(payment.id)} className="shrink-0">
+                      <Trash2 className="w-3.5 h-3.5 text-muted-foreground hover:text-destructive" />
+                    </button>
                   </div>
-                  <span className="text-emerald-400 font-bold text-xs sm:text-sm shrink-0">{formatCurrency(payment.value)}</span>
-                  <button onClick={() => deletePayment(payment.id)} className="shrink-0">
-                    <Trash2 className="w-3.5 h-3.5 text-muted-foreground hover:text-destructive" />
-                  </button>
-                </div>
-              ))}
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Custos Section */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+                <TrendingDown className="w-4 h-4 text-red-400" /> Custos do Projeto
+              </h4>
+              <Button size="sm" variant="outline" onClick={() => setCostModal(true)} className="gap-1 text-xs"><Plus className="w-4 h-4" /> Novo Custo</Button>
             </div>
-          )}
+            {estimatedCost > 0 && (
+              <div className="bg-card border border-border rounded-xl p-4">
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-muted-foreground">Custo Real vs Estimado</span>
+                  <span className="text-foreground font-medium">{Math.round((totalCosts / estimatedCost) * 100)}%</span>
+                </div>
+                <Progress value={estimatedCost > 0 ? Math.min(100, (totalCosts / estimatedCost) * 100) : 0} className="h-2.5" />
+                <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+                  <span>Real: <span className="text-red-400 font-medium">{formatCurrency(totalCosts)}</span></span>
+                  <span>Estimado: <span className="text-muted-foreground font-medium">{formatCurrency(estimatedCost)}</span></span>
+                </div>
+              </div>
+            )}
+            {(project.costs || []).length === 0 ? (
+              <p className="text-center text-muted-foreground py-4 text-sm">Nenhum custo registrado</p>
+            ) : (
+              <div className="space-y-2">
+                {[...(project.costs || [])].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(cost => (
+                  <div key={cost.id} className="flex items-center gap-2 sm:gap-3 bg-secondary/50 rounded-lg p-3 group">
+                    <TrendingDown className="w-4 h-4 text-red-400 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-foreground text-xs sm:text-sm font-medium truncate">{cost.description}</p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/10 text-red-400">
+                          {PROJECT_COST_CATEGORIES[cost.category] || cost.category}
+                        </span>
+                        <p className="text-muted-foreground text-[10px]">{new Date(cost.date).toLocaleDateString('pt-BR')}</p>
+                      </div>
+                    </div>
+                    <span className="text-red-400 font-bold text-xs sm:text-sm shrink-0">{formatCurrency(cost.value)}</span>
+                    <button onClick={() => deleteCost(cost.id)} className="shrink-0">
+                      <Trash2 className="w-3.5 h-3.5 text-muted-foreground hover:text-destructive" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="pt-2 border-t border-border text-xs text-muted-foreground">
+              Total de custos: <span className="text-red-400 font-bold">{formatCurrency(totalCosts)}</span>
+              {estimatedCost > 0 && totalCosts > estimatedCost && (
+                <span className="text-red-400 ml-2">⚠️ Acima do estimado!</span>
+              )}
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
 
@@ -427,6 +506,30 @@ export default function ProjectDetail({ project, onBack, onUpdate }: Props) {
             <div><Label>Valor (R$) *</Label><Input type="number" value={paymentForm.value} onChange={e => setPaymentForm({ ...paymentForm, value: e.target.value })} placeholder="0,00" /></div>
             <div><Label>Data</Label><Input type="date" value={paymentForm.date} onChange={e => setPaymentForm({ ...paymentForm, date: e.target.value })} /></div>
             <Button onClick={savePayment} className="w-full">Registrar Pagamento</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={costModal} onOpenChange={setCostModal}>
+        <DialogContent className="max-w-md"><DialogHeader><DialogTitle>Novo Custo</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div><Label>Descrição *</Label><Input value={costForm.description} onChange={e => setCostForm({ ...costForm, description: e.target.value })} placeholder="Ex: Designer freelancer" /></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Valor (R$) *</Label><Input type="number" value={costForm.value} onChange={e => setCostForm({ ...costForm, value: e.target.value })} placeholder="0,00" /></div>
+              <div>
+                <Label>Categoria</Label>
+                <Select value={costForm.category} onValueChange={v => setCostForm({ ...costForm, category: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(PROJECT_COST_CATEGORIES).map(([k, v]) => (
+                      <SelectItem key={k} value={k}>{v}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div><Label>Data</Label><Input type="date" value={costForm.date} onChange={e => setCostForm({ ...costForm, date: e.target.value })} /></div>
+            <Button onClick={saveCost} className="w-full">Registrar Custo</Button>
           </div>
         </DialogContent>
       </Dialog>
