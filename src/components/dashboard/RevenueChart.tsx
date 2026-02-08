@@ -1,15 +1,16 @@
 import { useMemo } from "react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { Project } from "@/lib/projects-data";
+import { Client, formatCurrency } from "@/lib/clients-data";
 import { Transaction, isInPeriod, getMonthLabel } from "@/lib/finance-data";
-import { formatCurrency } from "@/lib/clients-data";
 
 interface Props {
   projects: Project[];
+  clients: Client[];
   transactions: Transaction[];
 }
 
-export default function RevenueChart({ projects, transactions }: Props) {
+export default function RevenueChart({ projects, clients, transactions }: Props) {
   const data = useMemo(() => {
     const now = new Date();
     const months: { month: string; start: Date; end: Date }[] = [];
@@ -19,32 +20,36 @@ export default function RevenueChart({ projects, transactions }: Props) {
       months.push({ month: getMonthLabel(start), start, end });
     }
 
+    const clientProjects = clients.flatMap(c => c.projects);
+
     return months.map(({ month, start, end }) => {
+      // Standalone project revenue
       const projRevenue = projects.reduce((s, p) =>
-        s + (p.payments || [])
-          .filter(pay => isInPeriod(pay.date, start, end))
-          .reduce((ss, pay) => ss + pay.value, 0)
-      , 0);
+        s + (p.payments || []).filter(pay => isInPeriod(pay.date, start, end)).reduce((ss, pay) => ss + pay.value, 0), 0);
+      // Client project revenue
+      const clientRevenue = clientProjects.reduce((s, p) =>
+        s + (p.payments || []).filter(pay => isInPeriod(pay.date, start, end)).reduce((ss, pay) => ss + (pay.value || 0), 0), 0);
+      // Transaction revenue
       const txRevenue = transactions
         .filter(t => t.type === 'receita' && t.status === 'pago' && isInPeriod(t.date, start, end))
         .reduce((s, t) => s + t.value, 0);
+      // Standalone project costs
       const projCosts = projects.reduce((s, p) =>
-        s + (p.costs || [])
-          .filter(c => isInPeriod(c.date, start, end))
-          .reduce((ss, c) => ss + c.value, 0)
-      , 0);
+        s + (p.costs || []).filter(c => isInPeriod(c.date, start, end)).reduce((ss, c) => ss + c.value, 0), 0);
+      // Client project costs
+      const clientCosts = clientProjects.reduce((s, p) =>
+        s + (p.costs || []).filter(c => isInPeriod(c.date, start, end)).reduce((ss, c) => ss + (c.value || 0), 0), 0);
+      // Transaction expenses
       const txExpenses = transactions
         .filter(t => t.type === 'despesa' && t.status === 'pago' && isInPeriod(t.date, start, end))
         .reduce((s, t) => s + t.value, 0);
 
-      return {
-        month,
-        receita: projRevenue + txRevenue,
-        despesa: projCosts + txExpenses,
-        lucro: (projRevenue + txRevenue) - (projCosts + txExpenses),
-      };
+      const receita = projRevenue + clientRevenue + txRevenue;
+      const despesa = projCosts + clientCosts + txExpenses;
+
+      return { month, receita, despesa, lucro: receita - despesa };
     });
-  }, [projects, transactions]);
+  }, [projects, clients, transactions]);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload) return null;
