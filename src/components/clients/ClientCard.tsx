@@ -21,16 +21,16 @@ export default function ClientCard({ client, onOpen, onEdit, onToggleFavorite }:
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="w-full max-w-[340px] rounded-xl border border-border bg-card overflow-hidden hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 group"
+      className={cn(
+        "w-full max-w-[340px] rounded-xl border-2 bg-card overflow-hidden hover:shadow-lg transition-all duration-300 group",
+        client.private
+          ? "border-destructive/60 hover:border-destructive hover:shadow-destructive/10"
+          : "border-border hover:border-primary/40 hover:shadow-primary/5"
+      )}
     >
       {/* Header */}
       <div className="p-5 pb-3 relative">
         <div className="absolute top-4 right-4 flex items-center gap-1">
-          {client.private && (
-            <span className="text-xs px-1.5 py-0.5 rounded-full border border-muted bg-muted text-muted-foreground font-medium flex items-center gap-1">
-              <Lock className="w-3 h-3" /> Privado
-            </span>
-          )}
           <span className={cn("text-xs px-2 py-0.5 rounded-full border font-medium", CLIENT_STATUS_COLORS[client.status])}>
             {CLIENT_STATUS_ICONS[client.status]} {CLIENT_STATUS_LABELS[client.status]}
           </span>

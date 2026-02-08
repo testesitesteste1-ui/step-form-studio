@@ -41,7 +41,7 @@ export default function Dashboard() {
 
       {/* Charts row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <RevenueChart projects={projects} transactions={transactions} />
+        <RevenueChart projects={projects} clients={clients} transactions={transactions} />
         <ProjectsOverview projects={projects} />
       </div>
 

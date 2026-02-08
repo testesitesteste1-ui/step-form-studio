@@ -23,24 +23,30 @@ export default function PerformanceIndicators({ projects, leads, clients, transa
     const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
 
-    // Avg project value
-    const activeEnriched = enriched.filter(p => ['ativo', 'concluido'].includes(p.status));
-    const avgProjectValue = activeEnriched.length > 0
-      ? activeEnriched.reduce((s, p) => s + p.value, 0) / activeEnriched.length
-      : 0;
+    const clientProjects = clients.flatMap(c => c.projects);
+    const clientPayments = clientProjects.flatMap(p => (p.payments || []));
 
-    // Avg task completion
-    const allTasks = enriched.flatMap(p => p.tasks || []);
+    // Avg project value (standalone + client)
+    const activeEnriched = enriched.filter(p => ['ativo', 'concluido'].includes(p.status));
+    const activeClientProjects = clientProjects.filter(p => ['ativo', 'concluido'].includes(p.status));
+    const allActiveCount = activeEnriched.length + activeClientProjects.length;
+    const allActiveValue = activeEnriched.reduce((s, p) => s + p.value, 0) + activeClientProjects.reduce((s, p) => s + (p.value || 0), 0);
+    const avgProjectValue = allActiveCount > 0 ? allActiveValue / allActiveCount : 0;
+
+    // Avg task completion (standalone + client)
+    const allTasks = [...enriched.flatMap(p => p.tasks || []), ...clientProjects.flatMap(p => (p.tasks || []))];
     const doneTasks = allTasks.filter(t => t.column === 'done').length;
     const taskCompletion = allTasks.length > 0 ? Math.round((doneTasks / allTasks.length) * 100) : 0;
 
-    // Revenue growth (current vs last month)
+    // Revenue growth (current vs last month) — include client payments
     const currentMonthRev = projects.reduce((s, p) =>
       s + (p.payments || []).filter(pay => isInPeriod(pay.date, monthStart, monthEnd)).reduce((ss, pay) => ss + pay.value, 0), 0)
+      + clientPayments.filter(pay => isInPeriod(pay.date, monthStart, monthEnd)).reduce((s, pay) => s + (pay.value || 0), 0)
       + transactions.filter(t => t.type === 'receita' && t.status === 'pago' && isInPeriod(t.date, monthStart, monthEnd)).reduce((s, t) => s + t.value, 0);
 
     const lastMonthRev = projects.reduce((s, p) =>
       s + (p.payments || []).filter(pay => isInPeriod(pay.date, lastMonthStart, lastMonthEnd)).reduce((ss, pay) => ss + pay.value, 0), 0)
+      + clientPayments.filter(pay => isInPeriod(pay.date, lastMonthStart, lastMonthEnd)).reduce((s, pay) => s + (pay.value || 0), 0)
       + transactions.filter(t => t.type === 'receita' && t.status === 'pago' && isInPeriod(t.date, lastMonthStart, lastMonthEnd)).reduce((s, t) => s + t.value, 0);
 
     const revenueGrowth = lastMonthRev > 0 ? Math.round(((currentMonthRev - lastMonthRev) / lastMonthRev) * 100) : 0;
