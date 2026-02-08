@@ -70,6 +70,8 @@ export default function NewProjectModal({ open, onClose, onSave }: Props) {
         createdAt: new Date().toISOString(),
       });
       reset();
+    } catch (err) {
+      console.error("Erro ao criar projeto:", err);
     } finally {
       setSaving(false);
     }

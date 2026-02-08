@@ -5,7 +5,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
-  Search, SlidersHorizontal, List, Columns3, LayoutGrid, Plus,
+  Search, SlidersHorizontal, List, Columns3, LayoutGrid, Plus, Loader2,
 } from "lucide-react";
 import { useProjects } from "@/hooks/useProjects";
 import {
@@ -91,6 +91,14 @@ export default function Projects() {
     if (!project) return;
     await updateProject({ ...project, status: newStatus });
   }, [projects, updateProject]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-5">

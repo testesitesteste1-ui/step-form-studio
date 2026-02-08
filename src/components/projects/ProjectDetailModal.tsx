@@ -2,7 +2,7 @@
 // Project Detail Modal - Full project management view
 // ═══════════════════════════════════════════════════════════
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X, Star, CheckCircle2, DollarSign, Calendar, AlertTriangle, Plus, Trash2,
@@ -57,6 +57,11 @@ export default function ProjectDetailModal({ project, open, onClose, onUpdate, o
   const [editingName, setEditingName] = useState(false);
   const [tempName, setTempName] = useState(project.name);
 
+  // Sync tempName when project changes
+  useEffect(() => {
+    setTempName(project.name);
+  }, [project.name]);
+
   // Task creation
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskColumn, setNewTaskColumn] = useState<TaskColumn>('todo');
@@ -86,7 +91,11 @@ export default function ProjectDetailModal({ project, open, onClose, onUpdate, o
   const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
   const update = async (partial: Partial<Project>) => {
-    await onUpdate({ ...project, ...partial });
+    try {
+      await onUpdate({ ...project, ...partial });
+    } catch (err) {
+      console.error("Erro ao atualizar projeto:", err);
+    }
   };
 
   // ── Tasks ──
