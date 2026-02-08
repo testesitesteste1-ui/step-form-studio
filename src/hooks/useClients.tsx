@@ -16,7 +16,10 @@ function parseProject(value: any): any {
     ...value,
     tasks: toArray(value.tasks),
     links: toArray(value.links),
+    notes: toArray(value.notes),
+    payments: toArray(value.payments),
     value: Number(value.value) || 0,
+    paidAmount: Number(value.paidAmount) || 0,
   };
 }
 

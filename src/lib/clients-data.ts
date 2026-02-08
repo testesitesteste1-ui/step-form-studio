@@ -1,6 +1,8 @@
 export type ClientStatus = 'proposta' | 'ativo' | 'pausado' | 'finalizado' | 'perdido';
 export type InteractionType = 'ligacao' | 'email' | 'whatsapp' | 'reuniao' | 'nota';
 export type ProjectStatus = 'negociando' | 'ativo' | 'pausado' | 'concluido';
+export type TaskPriority = 'baixa' | 'media' | 'alta' | 'urgente';
+export type TaskColumn = 'backlog' | 'todo' | 'doing' | 'review' | 'done';
 export type DocumentCategory = 'contratos' | 'propostas' | 'briefings' | 'outros';
 
 export interface ClientInteraction {
@@ -30,6 +32,30 @@ export interface ProjectTask {
   id: string;
   title: string;
   completed: boolean;
+  column: TaskColumn;
+  priority: TaskPriority;
+  description?: string;
+  dueDate?: string;
+  createdAt: string;
+}
+
+export interface ProjectNote {
+  id: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface ProjectLink {
+  id: string;
+  title: string;
+  url: string;
+}
+
+export interface ProjectPayment {
+  id: string;
+  description: string;
+  value: number;
+  date: string;
 }
 
 export interface Project {
@@ -37,11 +63,13 @@ export interface Project {
   name: string;
   description: string;
   value: number;
+  paidAmount: number;
   status: ProjectStatus;
   startDate: string;
   tasks: ProjectTask[];
-  notes: string;
-  links: string[];
+  notes: ProjectNote[];
+  links: ProjectLink[];
+  payments: ProjectPayment[];
 }
 
 export interface Client {
@@ -109,6 +137,36 @@ export const PROJECT_STATUS_COLORS: Record<ProjectStatus, string> = {
   ativo: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
   pausado: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
   concluido: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+};
+
+export const TASK_COLUMN_LABELS: Record<TaskColumn, string> = {
+  backlog: 'Backlog',
+  todo: 'A Fazer',
+  doing: 'Em Andamento',
+  review: 'Revisão',
+  done: 'Concluído',
+};
+
+export const TASK_COLUMN_COLORS: Record<TaskColumn, string> = {
+  backlog: 'border-t-slate-500',
+  todo: 'border-t-blue-500',
+  doing: 'border-t-amber-500',
+  review: 'border-t-purple-500',
+  done: 'border-t-emerald-500',
+};
+
+export const TASK_PRIORITY_LABELS: Record<TaskPriority, string> = {
+  baixa: 'Baixa',
+  media: 'Média',
+  alta: 'Alta',
+  urgente: '🔥 Urgente',
+};
+
+export const TASK_PRIORITY_COLORS: Record<TaskPriority, string> = {
+  baixa: 'text-slate-400',
+  media: 'text-blue-400',
+  alta: 'text-orange-400',
+  urgente: 'text-red-400 font-bold',
 };
 
 export const INTERACTION_LABELS: Record<InteractionType, string> = {
