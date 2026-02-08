@@ -96,6 +96,8 @@ export interface Client {
   service: ClientService;
   id: string;
   name: string;
+  private?: boolean;
+  createdBy?: string;
   company: string;
   segment: string;
   cpfCnpj: string;
