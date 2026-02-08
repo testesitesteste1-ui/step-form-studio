@@ -22,6 +22,7 @@ import ProjectListView from "@/components/projects/ProjectListView";
 import ProjectKanbanView from "@/components/projects/ProjectKanbanView";
 import ProjectGridView from "@/components/projects/ProjectGridView";
 import NewProjectModal from "@/components/projects/NewProjectModal";
+import ProjectDetailModal from "@/components/projects/ProjectDetailModal";
 
 const VIEW_MODES: { value: ProjectViewMode; icon: typeof List; label: string }[] = [
   { value: 'lista', icon: List, label: 'Lista' },
@@ -56,8 +57,10 @@ export default function Projects() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [newProjectOpen, setNewProjectOpen] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
 
   const allProjects = useMemo(() => enrichAllProjects(projects), [projects]);
+  const selectedProject = useMemo(() => projects.find(p => p.id === selectedProjectId), [projects, selectedProjectId]);
 
   const mergedFilters = useMemo(() => ({ ...filters, search }), [filters, search]);
   const filtered = useMemo(() => applyFilters(allProjects, mergedFilters), [allProjects, mergedFilters]);
@@ -80,8 +83,7 @@ export default function Projects() {
   ].filter(Boolean).length;
 
   const handleOpenProject = useCallback((project: EnrichedProject) => {
-    // TODO: open project detail modal
-    console.log('Open project:', project.id);
+    setSelectedProjectId(project.id);
   }, []);
 
   const handleChangeStatus = useCallback(async (projectId: string, newStatus: ProjectStatus) => {
@@ -222,6 +224,17 @@ export default function Projects() {
           setNewProjectOpen(false);
         }}
       />
+
+      {/* Project Detail Modal */}
+      {selectedProject && (
+        <ProjectDetailModal
+          project={selectedProject}
+          open={!!selectedProject}
+          onClose={() => setSelectedProjectId(null)}
+          onUpdate={updateProject}
+          onDelete={async (id) => { await deleteProject(id); setSelectedProjectId(null); }}
+        />
+      )}
     </div>
   );
 }
