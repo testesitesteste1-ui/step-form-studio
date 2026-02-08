@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, FolderOpen, ArrowRight, CheckCircle2 } from "lucide-react";
-import { Client, Project, ProjectStatus, PROJECT_STATUS_LABELS, PROJECT_STATUS_COLORS, formatCurrency, newId } from "@/lib/clients-data";
+import { Plus, FolderOpen, ArrowRight, CheckCircle2, DollarSign } from "lucide-react";
+import {
+  Client, Project, ProjectStatus, PROJECT_STATUS_LABELS, PROJECT_STATUS_COLORS,
+  formatCurrency, newId,
+} from "@/lib/clients-data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,14 +25,17 @@ export default function ClientProjectsTab({ client, onUpdate }: Props) {
   const { toast } = useToast();
   const [newModal, setNewModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [form, setForm] = useState({ name: '', description: '', value: '', status: 'ativo' as ProjectStatus, startDate: new Date().toISOString().split('T')[0] });
+  const [form, setForm] = useState({
+    name: '', description: '', value: '', status: 'ativo' as ProjectStatus,
+    startDate: new Date().toISOString().split('T')[0],
+  });
 
   const handleAddProject = async () => {
     if (!form.name.trim()) { toast({ title: "Nome é obrigatório", variant: "destructive" }); return; }
     const project: Project = {
       id: newId(), name: form.name, description: form.description,
-      value: parseFloat(form.value) || 0, status: form.status,
-      startDate: form.startDate, tasks: [], notes: '', links: [],
+      value: parseFloat(form.value) || 0, paidAmount: 0, status: form.status,
+      startDate: form.startDate, tasks: [], notes: [], links: [], payments: [],
     };
     await onUpdate({ ...client, projects: [...client.projects, project] });
     toast({ title: "Projeto criado!" });
@@ -67,9 +73,11 @@ export default function ClientProjectsTab({ client, onUpdate }: Props) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <AnimatePresence>
             {client.projects.map(project => {
-              const completedTasks = project.tasks.filter(t => t.completed).length;
+              const completedTasks = project.tasks.filter(t => t.column === 'done').length;
               const totalTasks = project.tasks.length;
               const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+              const totalPaid = (project.payments || []).reduce((sum, p) => sum + p.value, 0);
+              const remaining = project.value - totalPaid;
 
               return (
                 <motion.div
@@ -85,7 +93,19 @@ export default function ClientProjectsTab({ client, onUpdate }: Props) {
                       {PROJECT_STATUS_LABELS[project.status]}
                     </span>
                   </div>
-                  <p className="text-primary font-bold text-sm mb-3">{formatCurrency(project.value)}</p>
+
+                  {/* Financial info */}
+                  <div className="grid grid-cols-2 gap-2 mb-3">
+                    <div className="text-center bg-secondary/50 rounded-lg p-1.5">
+                      <p className="text-emerald-400 font-bold text-xs">{formatCurrency(totalPaid)}</p>
+                      <p className="text-muted-foreground text-[9px]">Pago</p>
+                    </div>
+                    <div className="text-center bg-secondary/50 rounded-lg p-1.5">
+                      <p className={cn("font-bold text-xs", remaining > 0 ? "text-orange-400" : "text-emerald-400")}>{formatCurrency(Math.max(0, remaining))}</p>
+                      <p className="text-muted-foreground text-[9px]">Falta</p>
+                    </div>
+                  </div>
+
                   {totalTasks > 0 && (
                     <div className="space-y-1.5">
                       <Progress value={progress} className="h-1.5" />

@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
-import { Star, MoreHorizontal, FolderOpen, DollarSign, Calendar, Clock } from "lucide-react";
-import { Client, CLIENT_STATUS_LABELS, CLIENT_STATUS_COLORS, CLIENT_STATUS_ICONS, getAvatarColor, getInitials, formatCurrency, getDaysSince, getMonthsSince } from "@/lib/clients-data";
+import { Star, DollarSign } from "lucide-react";
+import { Client, CLIENT_STATUS_LABELS, CLIENT_STATUS_COLORS, CLIENT_STATUS_ICONS, getAvatarColor, getInitials, formatCurrency } from "@/lib/clients-data";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -11,10 +11,9 @@ interface Props {
 }
 
 export default function ClientCard({ client, onOpen, onToggleFavorite }: Props) {
-  const activeProjects = client.projects.filter(p => p.status === 'ativo').length;
   const totalValue = client.projects.reduce((sum, p) => sum + (p.value || 0), 0);
-  const daysSinceContact = client.lastContact ? getDaysSince(client.lastContact) : 0;
-  const monthsOfPartnership = getMonthsSince(client.createdAt);
+  const totalPaid = client.projects.reduce((sum, p) => sum + ((p.payments || []).reduce((s, pay) => s + pay.value, 0)), 0);
+  const remaining = totalValue - totalPaid;
   const avatarColor = getAvatarColor(client.name);
 
   return (
@@ -43,26 +42,21 @@ export default function ClientCard({ client, onOpen, onToggleFavorite }: Props) 
       </div>
 
       {/* Mini Metrics Grid */}
-      <div className="grid grid-cols-2 gap-2 px-5 pb-4">
+      <div className="grid grid-cols-3 gap-2 px-5 pb-4">
         <div className="bg-secondary/50 rounded-lg p-2.5 text-center">
-          <FolderOpen className="w-4 h-4 text-primary mx-auto mb-1" />
-          <p className="text-foreground font-bold text-lg leading-none">{activeProjects}</p>
-          <p className="text-muted-foreground text-[10px] mt-0.5">projetos ativos</p>
+          <DollarSign className="w-4 h-4 text-primary mx-auto mb-1" />
+          <p className="text-foreground font-bold text-xs">{formatCurrency(totalValue)}</p>
+          <p className="text-muted-foreground text-[10px] mt-0.5">total</p>
         </div>
         <div className="bg-secondary/50 rounded-lg p-2.5 text-center">
           <DollarSign className="w-4 h-4 text-emerald-400 mx-auto mb-1" />
-          <p className="text-foreground font-bold text-sm leading-none">{formatCurrency(totalValue)}</p>
-          <p className="text-muted-foreground text-[10px] mt-0.5">faturado</p>
+          <p className="text-emerald-400 font-bold text-xs">{formatCurrency(totalPaid)}</p>
+          <p className="text-muted-foreground text-[10px] mt-0.5">pago</p>
         </div>
         <div className="bg-secondary/50 rounded-lg p-2.5 text-center">
-          <Calendar className="w-4 h-4 text-orange-400 mx-auto mb-1" />
-          <p className="text-foreground font-bold text-lg leading-none">{daysSinceContact}d</p>
-          <p className="text-muted-foreground text-[10px] mt-0.5">último contato</p>
-        </div>
-        <div className="bg-secondary/50 rounded-lg p-2.5 text-center">
-          <Clock className="w-4 h-4 text-violet-400 mx-auto mb-1" />
-          <p className="text-foreground font-bold text-lg leading-none">{monthsOfPartnership}</p>
-          <p className="text-muted-foreground text-[10px] mt-0.5">meses parceria</p>
+          <DollarSign className="w-4 h-4 text-orange-400 mx-auto mb-1" />
+          <p className={cn("font-bold text-xs", remaining > 0 ? "text-orange-400" : "text-emerald-400")}>{formatCurrency(Math.max(0, remaining))}</p>
+          <p className="text-muted-foreground text-[10px] mt-0.5">falta</p>
         </div>
       </div>
 

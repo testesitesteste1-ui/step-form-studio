@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Plus, Trash2, FolderOpen, DollarSign, Clock, BarChart3 } from "lucide-react";
-import { Client, Project, CLIENT_STATUS_LABELS, CLIENT_STATUS_COLORS, CLIENT_STATUS_ICONS, getAvatarColor, getInitials, formatCurrency, getMonthsSince, newId } from "@/lib/clients-data";
+import { ArrowLeft, Trash2, FolderOpen, DollarSign } from "lucide-react";
+import { Client, CLIENT_STATUS_LABELS, CLIENT_STATUS_COLORS, CLIENT_STATUS_ICONS, getAvatarColor, getInitials, formatCurrency } from "@/lib/clients-data";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
@@ -26,9 +26,9 @@ export default function ClientDetail({ client, onBack, onUpdate, onDelete }: Pro
   const [confirmDelete, setConfirmDelete] = useState(false);
   const avatarColor = getAvatarColor(client.name);
 
-  const activeProjects = client.projects.filter(p => p.status === 'ativo').length;
   const totalValue = client.projects.reduce((sum, p) => sum + (p.value || 0), 0);
-  const months = getMonthsSince(client.createdAt);
+  const totalPaid = client.projects.reduce((sum, p) => sum + ((p.payments || []).reduce((s, pay) => s + pay.value, 0)), 0);
+  const totalRemaining = totalValue - totalPaid;
 
   const handleDelete = async () => {
     await onDelete(client.id);
@@ -65,9 +65,9 @@ export default function ClientDetail({ client, onBack, onUpdate, onDelete }: Pro
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
           { icon: FolderOpen, label: 'Total de Projetos', value: client.projects.length, color: 'text-primary' },
-          { icon: BarChart3, label: 'Projetos Ativos', value: activeProjects, color: 'text-emerald-400' },
-          { icon: DollarSign, label: 'Valor Total', value: formatCurrency(totalValue), color: 'text-amber-400' },
-          { icon: Clock, label: `Cliente há ${months} meses`, value: new Date(client.createdAt).toLocaleDateString('pt-BR'), color: 'text-violet-400' },
+          { icon: DollarSign, label: 'Valor Total', value: formatCurrency(totalValue), color: 'text-primary' },
+          { icon: DollarSign, label: 'Total Pago', value: formatCurrency(totalPaid), color: 'text-emerald-400' },
+          { icon: DollarSign, label: 'Falta Pagar', value: formatCurrency(Math.max(0, totalRemaining)), color: totalRemaining > 0 ? 'text-orange-400' : 'text-emerald-400' },
         ].map((m, i) => (
           <div key={i} className="bg-card border border-border rounded-xl p-4 text-center">
             <m.icon className={cn("w-5 h-5 mx-auto mb-2", m.color)} />
