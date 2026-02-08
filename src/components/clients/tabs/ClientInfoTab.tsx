@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Copy, ExternalLink, MessageCircle } from "lucide-react";
-import { Client, ClientStatus, CLIENT_STATUS_LABELS } from "@/lib/clients-data";
+import { Client, ClientStatus, CLIENT_STATUS_LABELS, ClientService, CLIENT_SERVICE_LABELS } from "@/lib/clients-data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -53,6 +53,17 @@ export default function ClientInfoTab({ client, onUpdate }: Props) {
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 {Object.entries(CLIENT_STATUS_LABELS).map(([k, v]) => (
+                  <SelectItem key={k} value={k}>{v}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Serviço</Label>
+            <Select value={form.service || 'sistemas'} onValueChange={v => update('service', v)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {Object.entries(CLIENT_SERVICE_LABELS).map(([k, v]) => (
                   <SelectItem key={k} value={k}>{v}</SelectItem>
                 ))}
               </SelectContent>
