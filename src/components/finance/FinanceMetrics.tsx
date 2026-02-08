@@ -148,7 +148,7 @@ export default function FinanceMetrics({ clients, transactions, period }: Props)
           <card.icon className={cn("w-5 h-5 mb-2", card.iconColor)} />
           <p className="text-foreground font-bold text-sm sm:text-lg">{card.value}</p>
           <p className="text-foreground/80 text-[10px] sm:text-xs font-medium">{card.label}</p>
-          <p className="text-muted-foreground text-[9px] sm:text-[10px] mt-1 truncate">{card.sub}</p>
+          <p className="text-foreground/60 text-[10px] sm:text-xs mt-1">{card.sub}</p>
         </motion.div>
       ))}
     </div>
