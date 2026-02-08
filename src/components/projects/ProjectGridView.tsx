@@ -1,14 +1,14 @@
 // ═══════════════════════════════════════════════════════════
-// Grid/Board View - Compact cards in a responsive grid
+// Grid/Board View - Independent project cards
 // ═══════════════════════════════════════════════════════════
 
 import { motion, AnimatePresence } from "framer-motion";
-import { FolderOpen, DollarSign, CheckCircle2, AlertTriangle } from "lucide-react";
-import { EnrichedProject } from "@/lib/projects-data";
+import { FolderOpen, AlertTriangle, Star } from "lucide-react";
 import {
+  EnrichedProject,
   PROJECT_STATUS_COLORS, PROJECT_STATUS_LABELS,
-  CLIENT_SERVICE_LABELS, formatCurrency, getAvatarColor, getInitials,
-} from "@/lib/clients-data";
+  SERVICE_LABELS, PRIORITY_OPTIONS, formatCurrency,
+} from "@/lib/projects-data";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
@@ -32,7 +32,7 @@ export default function ProjectGridView({ projects, onOpenProject }: Props) {
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
       <AnimatePresence>
         {projects.map(project => {
-          const avatarColor = getAvatarColor(project.clientName);
+          const priorityOpt = PRIORITY_OPTIONS.find(o => o.value === project.priority);
           return (
             <motion.div
               key={project.id}
@@ -41,30 +41,35 @@ export default function ProjectGridView({ projects, onOpenProject }: Props) {
               onClick={() => onOpenProject(project)}
               className={cn(
                 "border border-border rounded-xl bg-card overflow-hidden cursor-pointer hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all group",
-                project.status === 'pausado' && "opacity-70"
+                project.status === 'pausado' && "opacity-70",
+                project.isOverdue && "border-red-500/50"
               )}
             >
-              {/* Gradient header */}
-              <div className={cn("h-2 w-full", PROJECT_STATUS_COLORS[project.status].replace('text-', 'bg-').split(' ')[0])} />
+              {/* Status color header */}
+              <div className={cn("h-2 w-full", PROJECT_STATUS_COLORS[project.status].split(' ')[0])} />
 
               <div className="p-3.5">
-                {/* Name + Status */}
                 <div className="flex items-start justify-between gap-2 mb-2">
-                  <h4 className="text-foreground font-semibold text-sm truncate">{project.name}</h4>
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <h4 className="text-foreground font-semibold text-sm truncate">{project.name}</h4>
+                    {project.favorite && <Star className="w-3 h-3 text-yellow-400 fill-yellow-400 shrink-0" />}
+                  </div>
                   <span className={cn("text-[9px] px-1.5 py-0.5 rounded-full border font-medium shrink-0", PROJECT_STATUS_COLORS[project.status])}>
                     {PROJECT_STATUS_LABELS[project.status]}
                   </span>
                 </div>
 
-                {/* Client */}
-                <div className="flex items-center gap-2 mb-3">
-                  <div className={cn("w-5 h-5 rounded-full bg-gradient-to-br flex items-center justify-center text-white text-[8px] font-bold shrink-0", avatarColor)}>
-                    {getInitials(project.clientName)}
-                  </div>
-                  <p className="text-muted-foreground text-xs truncate">{project.clientName}</p>
+                {/* Service + Priority */}
+                <div className="flex items-center gap-2 mb-3 flex-wrap">
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">
+                    {SERVICE_LABELS[project.service]}
+                  </span>
+                  {priorityOpt && (
+                    <span className="text-[10px] text-muted-foreground">{priorityOpt.icon} {priorityOpt.label}</span>
+                  )}
                 </div>
 
-                {/* Progress donut-style bar */}
+                {/* Progress */}
                 <div className="mb-3">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-[10px] text-muted-foreground">{project.completedTasks}/{project.totalTasks} tarefas</span>
@@ -73,7 +78,7 @@ export default function ProjectGridView({ projects, onOpenProject }: Props) {
                   <Progress value={project.progress} className="h-1.5" />
                 </div>
 
-                {/* Financial row */}
+                {/* Financial + indicators */}
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-primary">{formatCurrency(project.value)}</span>
                   {project.urgentTasks > 0 && (
@@ -83,11 +88,13 @@ export default function ProjectGridView({ projects, onOpenProject }: Props) {
                   )}
                 </div>
 
-                {/* Service tag */}
-                {project.clientService && (
-                  <span className="inline-block mt-2 text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">
-                    {CLIENT_SERVICE_LABELS[project.clientService]}
-                  </span>
+                {/* Tags */}
+                {project.tags && project.tags.length > 0 && (
+                  <div className="flex gap-1 mt-2 flex-wrap">
+                    {project.tags.slice(0, 3).map(tag => (
+                      <span key={tag} className="text-[8px] px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground">#{tag}</span>
+                    ))}
+                  </div>
                 )}
               </div>
             </motion.div>

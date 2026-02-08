@@ -1,20 +1,16 @@
 // ═══════════════════════════════════════════════════════════
-// Projects Page - Consolidated view of ALL projects across ALL clients
-// Multiple views: Lista, Kanban, Quadro
-// Advanced filters, search, sorting, grouping
+// Projects Page - Independent project management
 // ═══════════════════════════════════════════════════════════
 
 import { useState, useMemo, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  Search, SlidersHorizontal, List, Columns3, LayoutGrid, FolderOpen, Plus,
+  Search, SlidersHorizontal, List, Columns3, LayoutGrid, Plus,
 } from "lucide-react";
-import { useClients } from "@/hooks/useClients";
-import { Client, ProjectStatus } from "@/lib/clients-data";
+import { useProjects } from "@/hooks/useProjects";
 import {
   EnrichedProject, ProjectViewMode, ProjectSortBy, ProjectGroupBy,
-  ProjectFilters, DEFAULT_FILTERS,
+  ProjectFilters, DEFAULT_FILTERS, ProjectStatus,
   enrichAllProjects, applyFilters, applySorting,
 } from "@/lib/projects-data";
 import { Button } from "@/components/ui/button";
@@ -25,6 +21,7 @@ import ProjectFilterSidebar from "@/components/projects/ProjectFilterSidebar";
 import ProjectListView from "@/components/projects/ProjectListView";
 import ProjectKanbanView from "@/components/projects/ProjectKanbanView";
 import ProjectGridView from "@/components/projects/ProjectGridView";
+import NewProjectModal from "@/components/projects/NewProjectModal";
 
 const VIEW_MODES: { value: ProjectViewMode; icon: typeof List; label: string }[] = [
   { value: 'lista', icon: List, label: 'Lista' },
@@ -35,21 +32,22 @@ const VIEW_MODES: { value: ProjectViewMode; icon: typeof List; label: string }[]
 const SORT_OPTIONS: { value: ProjectSortBy; label: string }[] = [
   { value: 'recentes', label: 'Recentes' },
   { value: 'alfabetico', label: 'Alfabético' },
+  { value: 'prazo', label: 'Prazo' },
   { value: 'valor', label: 'Valor' },
   { value: 'progresso', label: 'Progresso' },
-  { value: 'cliente', label: 'Cliente' },
+  { value: 'prioridade', label: 'Prioridade' },
 ];
 
 const GROUP_OPTIONS: { value: ProjectGroupBy; label: string }[] = [
   { value: 'nenhum', label: 'Sem Agrupamento' },
-  { value: 'cliente', label: 'Por Cliente' },
   { value: 'status', label: 'Por Status' },
   { value: 'servico', label: 'Por Serviço' },
+  { value: 'prioridade', label: 'Por Prioridade' },
+  { value: 'recorrencia', label: 'Por Recorrência' },
 ];
 
 export default function Projects() {
-  const { clients, updateClient } = useClients();
-  const navigate = useNavigate();
+  const { projects, loading, addProject, updateProject, deleteProject } = useProjects();
 
   const [viewMode, setViewMode] = useState<ProjectViewMode>('lista');
   const [sortBy, setSortBy] = useState<ProjectSortBy>('recentes');
@@ -57,44 +55,40 @@ export default function Projects() {
   const [filters, setFilters] = useState<ProjectFilters>(DEFAULT_FILTERS);
   const [filterOpen, setFilterOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const [newProjectOpen, setNewProjectOpen] = useState(false);
 
-  // Enrich all projects from all clients
-  const allProjects = useMemo(() => enrichAllProjects(clients), [clients]);
+  const allProjects = useMemo(() => enrichAllProjects(projects), [projects]);
 
-  // Apply filters + search
   const mergedFilters = useMemo(() => ({ ...filters, search }), [filters, search]);
   const filtered = useMemo(() => applyFilters(allProjects, mergedFilters), [allProjects, mergedFilters]);
   const sorted = useMemo(() => applySorting(filtered, sortBy), [filtered, sortBy]);
 
-  // Counts
   const activeCount = allProjects.filter(p => p.status === 'ativo').length;
   const completedCount = allProjects.filter(p => p.status === 'concluido').length;
 
-  // Active filter count
   const activeFilterCount = [
     filters.status.length > 0,
-    filters.clients.length > 0,
     filters.services.length > 0,
     filters.priorities.length > 0,
+    filters.recurrence.length > 0,
+    filters.tags.length > 0,
     filters.valueMin > 0,
     filters.valueMax > 0,
+    filters.overdue,
+    filters.dueSoon,
+    filters.favorite,
   ].filter(Boolean).length;
 
-  // Navigate to client detail with project open
   const handleOpenProject = useCallback((project: EnrichedProject) => {
-    // Navigate to clients page - we'll use a state approach
-    navigate('/clients', { state: { openClientId: project.clientId, openProjectId: project.id } });
-  }, [navigate]);
+    // TODO: open project detail modal
+    console.log('Open project:', project.id);
+  }, []);
 
-  // Change project status (for Kanban drag & drop)
-  const handleChangeStatus = useCallback(async (projectId: string, clientId: string, newStatus: ProjectStatus) => {
-    const client = clients.find(c => c.id === clientId);
-    if (!client) return;
-    const projects = client.projects.map(p =>
-      p.id === projectId ? { ...p, status: newStatus } : p
-    );
-    await updateClient({ ...client, projects });
-  }, [clients, updateClient]);
+  const handleChangeStatus = useCallback(async (projectId: string, newStatus: ProjectStatus) => {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+    await updateProject({ ...project, status: newStatus });
+  }, [projects, updateProject]);
 
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-5">
@@ -106,25 +100,23 @@ export default function Projects() {
             {allProjects.length} projetos • {activeCount} ativos • {completedCount} concluídos
           </p>
         </div>
-        <Button onClick={() => navigate('/clients')} className="gap-1.5">
+        <Button onClick={() => setNewProjectOpen(true)} className="gap-1.5">
           <Plus className="w-4 h-4" /> Novo Projeto
         </Button>
       </div>
 
       {/* Controls bar */}
       <div className="flex flex-col sm:flex-row gap-3">
-        {/* Search */}
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Buscar projetos, clientes..."
+            placeholder="Buscar projetos, tags..."
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="pl-9"
           />
         </div>
 
-        {/* View mode toggle */}
         <div className="flex items-center gap-1 bg-secondary rounded-lg p-1">
           {VIEW_MODES.map(mode => (
             <button
@@ -143,7 +135,6 @@ export default function Projects() {
           ))}
         </div>
 
-        {/* Sort (only for list and grid views) */}
         {viewMode !== 'kanban' && (
           <Select value={sortBy} onValueChange={v => setSortBy(v as ProjectSortBy)}>
             <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
@@ -155,7 +146,6 @@ export default function Projects() {
           </Select>
         )}
 
-        {/* Group (only for list view) */}
         {viewMode === 'lista' && (
           <Select value={groupBy} onValueChange={v => setGroupBy(v as ProjectGroupBy)}>
             <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
@@ -167,13 +157,7 @@ export default function Projects() {
           </Select>
         )}
 
-        {/* Filter button */}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setFilterOpen(true)}
-          className="gap-1.5 relative"
-        >
+        <Button variant="outline" size="sm" onClick={() => setFilterOpen(true)} className="gap-1.5 relative">
           <SlidersHorizontal className="w-4 h-4" />
           <span className="hidden sm:inline">Filtros</span>
           {activeFilterCount > 0 && (
@@ -193,15 +177,12 @@ export default function Projects() {
               <button onClick={() => setFilters({ ...filters, status: filters.status.filter(x => x !== s) })} className="hover:text-destructive">×</button>
             </span>
           ))}
-          {filters.clients.map(cId => {
-            const c = clients.find(x => x.id === cId);
-            return c ? (
-              <span key={cId} className="text-[10px] px-2 py-1 rounded-full bg-primary/10 text-primary font-medium flex items-center gap-1">
-                {c.name}
-                <button onClick={() => setFilters({ ...filters, clients: filters.clients.filter(x => x !== cId) })} className="hover:text-destructive">×</button>
-              </span>
-            ) : null;
-          })}
+          {filters.services.map(s => (
+            <span key={s} className="text-[10px] px-2 py-1 rounded-full bg-primary/10 text-primary font-medium flex items-center gap-1">
+              {s}
+              <button onClick={() => setFilters({ ...filters, services: filters.services.filter(x => x !== s) })} className="hover:text-destructive">×</button>
+            </span>
+          ))}
           <button
             onClick={() => setFilters(DEFAULT_FILTERS)}
             className="text-[10px] px-2 py-1 rounded-full bg-destructive/10 text-destructive font-medium hover:bg-destructive/20"
@@ -213,26 +194,13 @@ export default function Projects() {
 
       {/* Views */}
       {viewMode === 'lista' && (
-        <ProjectListView
-          projects={sorted}
-          groupBy={groupBy}
-          onOpenProject={handleOpenProject}
-        />
+        <ProjectListView projects={sorted} groupBy={groupBy} onOpenProject={handleOpenProject} />
       )}
-
       {viewMode === 'kanban' && (
-        <ProjectKanbanView
-          projects={sorted}
-          onOpenProject={handleOpenProject}
-          onChangeStatus={handleChangeStatus}
-        />
+        <ProjectKanbanView projects={sorted} onOpenProject={handleOpenProject} onChangeStatus={handleChangeStatus} />
       )}
-
       {viewMode === 'quadro' && (
-        <ProjectGridView
-          projects={sorted}
-          onOpenProject={handleOpenProject}
-        />
+        <ProjectGridView projects={sorted} onOpenProject={handleOpenProject} />
       )}
 
       {/* Filter Sidebar */}
@@ -241,8 +209,18 @@ export default function Projects() {
         onClose={() => setFilterOpen(false)}
         filters={filters}
         onChange={setFilters}
-        clients={clients}
+        allTags={[...new Set(projects.flatMap(p => p.tags || []))]}
         resultCount={sorted.length}
+      />
+
+      {/* New Project Modal */}
+      <NewProjectModal
+        open={newProjectOpen}
+        onClose={() => setNewProjectOpen(false)}
+        onSave={async (project) => {
+          await addProject(project);
+          setNewProjectOpen(false);
+        }}
       />
     </div>
   );
