@@ -44,8 +44,8 @@ export default function DespesasTab({ transactions, start, end, onAddExpense, on
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2 items-center justify-between">
-        <div className="flex gap-1.5 overflow-x-auto">
+      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+        <div className="flex flex-wrap gap-1.5">
           <button onClick={() => setCatFilter('todas')}
             className={cn("px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors",
               catFilter === 'todas' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground')}>
@@ -59,7 +59,7 @@ export default function DespesasTab({ transactions, start, end, onAddExpense, on
             </button>
           ))}
         </div>
-        <Button size="sm" onClick={onAddExpense} className="gap-1 text-xs"><Plus className="w-4 h-4" /> Nova Despesa</Button>
+        <Button size="sm" onClick={onAddExpense} className="gap-1 text-xs shrink-0"><Plus className="w-4 h-4" /> Nova Despesa</Button>
       </div>
 
       {/* Category summary */}
