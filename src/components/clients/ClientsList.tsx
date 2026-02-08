@@ -10,7 +10,7 @@ import NewClientModal from "./NewClientModal";
 interface Props {
   clients: Client[];
   loading: boolean;
-  onOpenClient: (client: Client) => void;
+  onOpenClient: (client: Client, tab?: string) => void;
   onAddClient: (client: Omit<Client, 'id'>) => Promise<string>;
   onUpdateClient: (client: Client) => Promise<void>;
 }
@@ -123,6 +123,7 @@ export default function ClientsList({ clients, loading, onOpenClient, onAddClien
                 key={client.id}
                 client={client}
                 onOpen={() => onOpenClient(client)}
+                onEdit={() => onOpenClient(client, 'informacoes')}
                 onToggleFavorite={() => toggleFavorite(client)}
               />
             ))}
