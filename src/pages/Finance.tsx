@@ -62,13 +62,13 @@ export default function Finance() {
 
       {/* Tabs */}
       <Tabs defaultValue="receitas" className="w-full">
-        <TabsList className="w-full justify-start overflow-x-auto">
-          <TabsTrigger value="receitas" className="text-xs sm:text-sm">Receitas</TabsTrigger>
-          <TabsTrigger value="despesas" className="text-xs sm:text-sm">Despesas</TabsTrigger>
-          <TabsTrigger value="a_receber" className="text-xs sm:text-sm">A Receber</TabsTrigger>
-          <TabsTrigger value="a_pagar" className="text-xs sm:text-sm">A Pagar</TabsTrigger>
-          <TabsTrigger value="fluxo" className="text-xs sm:text-sm">Fluxo de Caixa</TabsTrigger>
-          <TabsTrigger value="relatorios" className="text-xs sm:text-sm">Relatórios</TabsTrigger>
+        <TabsList className="w-full h-auto flex flex-wrap gap-1 p-1">
+          <TabsTrigger value="receitas" className="text-xs sm:text-sm flex-1 min-w-[80px]">Receitas</TabsTrigger>
+          <TabsTrigger value="despesas" className="text-xs sm:text-sm flex-1 min-w-[80px]">Despesas</TabsTrigger>
+          <TabsTrigger value="a_receber" className="text-xs sm:text-sm flex-1 min-w-[80px]">A Receber</TabsTrigger>
+          <TabsTrigger value="a_pagar" className="text-xs sm:text-sm flex-1 min-w-[80px]">A Pagar</TabsTrigger>
+          <TabsTrigger value="fluxo" className="text-xs sm:text-sm flex-1 min-w-[80px]">Fluxo de Caixa</TabsTrigger>
+          <TabsTrigger value="relatorios" className="text-xs sm:text-sm flex-1 min-w-[80px]">Relatórios</TabsTrigger>
         </TabsList>
 
         <TabsContent value="receitas" className="mt-4">

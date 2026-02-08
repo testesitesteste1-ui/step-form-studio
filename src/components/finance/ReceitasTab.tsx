@@ -88,8 +88,8 @@ export default function ReceitasTab({ clients, transactions, start, end, onAddRe
   return (
     <div className="space-y-4">
       {/* Filters + action */}
-      <div className="flex flex-wrap gap-2 items-center justify-between">
-        <div className="flex gap-1.5">
+      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+        <div className="flex flex-wrap gap-1.5">
           {(['todos', 'pago', 'pendente', 'atrasado'] as const).map(s => (
             <button key={s} onClick={() => setStatusFilter(s)}
               className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
@@ -99,7 +99,7 @@ export default function ReceitasTab({ clients, transactions, start, end, onAddRe
             </button>
           ))}
         </div>
-        <Button size="sm" onClick={onAddRevenue} className="gap-1 text-xs"><Plus className="w-4 h-4" /> Receita Paralela</Button>
+        <Button size="sm" onClick={onAddRevenue} className="gap-1 text-xs shrink-0"><Plus className="w-4 h-4" /> Receita Paralela</Button>
       </div>
 
       {/* Table / Cards */}
