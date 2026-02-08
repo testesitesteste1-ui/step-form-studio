@@ -5,7 +5,23 @@ import { Client } from "@/lib/clients-data";
 
 const CLIENTS_PATH = "clients";
 
+function toArray(val: any): any[] {
+  if (!val) return [];
+  if (Array.isArray(val)) return val;
+  return Object.values(val);
+}
+
+function parseProject(value: any): any {
+  return {
+    ...value,
+    tasks: toArray(value.tasks),
+    links: toArray(value.links),
+    value: Number(value.value) || 0,
+  };
+}
+
 function parseClient(firebaseKey: string, value: any): Client {
+  const projects = toArray(value.projects).map(parseProject);
   return {
     id: firebaseKey,
     name: value.name || '',
@@ -29,10 +45,10 @@ function parseClient(firebaseKey: string, value: any): Client {
     favorite: value.favorite || false,
     createdAt: value.createdAt || new Date().toISOString(),
     lastContact: value.lastContact || value.createdAt || new Date().toISOString(),
-    projects: value.projects ? (Array.isArray(value.projects) ? value.projects : Object.values(value.projects)) : [],
-    interactions: value.interactions ? (Array.isArray(value.interactions) ? value.interactions : Object.values(value.interactions)) : [],
-    notes: value.notes ? (Array.isArray(value.notes) ? value.notes : Object.values(value.notes)) : [],
-    documents: value.documents ? (Array.isArray(value.documents) ? value.documents : Object.values(value.documents)) : [],
+    projects,
+    interactions: toArray(value.interactions),
+    notes: toArray(value.notes),
+    documents: toArray(value.documents),
   };
 }
 
