@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Search, Users } from "lucide-react";
+import { Plus, Search, Users, Lock } from "lucide-react";
 import { Client, ClientStatus, CLIENT_STATUS_LABELS } from "@/lib/clients-data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,10 +29,9 @@ export default function ClientsList({ clients, loading, onOpenClient, onAddClien
   const [filter, setFilter] = useState<ClientStatus | 'todos'>('todos');
   const [newModalOpen, setNewModalOpen] = useState(false);
 
-  const filtered = useMemo(() => {
+  const { publicClients, privateClients } = useMemo(() => {
     let result = [...clients];
 
-    // Search
     if (search) {
       const q = search.toLowerCase();
       result = result.filter(c =>
@@ -43,20 +42,39 @@ export default function ClientsList({ clients, loading, onOpenClient, onAddClien
       );
     }
 
-    // Filter by status
     if (filter !== 'todos') {
       result = result.filter(c => c.status === filter);
     }
 
-    // Favorites first
     result.sort((a, b) => (b.favorite ? 1 : 0) - (a.favorite ? 1 : 0));
 
-    return result;
+    return {
+      publicClients: result.filter(c => !c.private),
+      privateClients: result.filter(c => c.private),
+    };
   }, [clients, search, filter]);
 
   const toggleFavorite = (client: Client) => {
     onUpdateClient({ ...client, favorite: !client.favorite });
   };
+
+  const renderGrid = (list: Client[]) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 justify-items-center">
+      <AnimatePresence>
+        {list.map(client => (
+          <ClientCard
+            key={client.id}
+            client={client}
+            onOpen={() => onOpenClient(client)}
+            onEdit={() => onOpenClient(client, 'informacoes')}
+            onToggleFavorite={() => toggleFavorite(client)}
+          />
+        ))}
+      </AnimatePresence>
+    </div>
+  );
+
+  const totalFiltered = publicClients.length + privateClients.length;
 
   return (
     <>
@@ -99,14 +117,14 @@ export default function ClientsList({ clients, loading, onOpenClient, onAddClien
         </div>
       </div>
 
-      {/* Grid */}
+      {/* Content */}
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 justify-items-center">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="w-full max-w-[340px] h-64 rounded-xl bg-secondary/50 animate-pulse" />
           ))}
         </div>
-      ) : filtered.length === 0 ? (
+      ) : totalFiltered === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <Users className="w-16 h-16 text-muted-foreground/30 mb-4" />
           <h3 className="text-lg font-medium text-foreground mb-1">Nenhum cliente encontrado</h3>
@@ -116,18 +134,23 @@ export default function ClientsList({ clients, loading, onOpenClient, onAddClien
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 justify-items-center">
-          <AnimatePresence>
-            {filtered.map(client => (
-              <ClientCard
-                key={client.id}
-                client={client}
-                onOpen={() => onOpenClient(client)}
-                onEdit={() => onOpenClient(client, 'informacoes')}
-                onToggleFavorite={() => toggleFavorite(client)}
-              />
-            ))}
-          </AnimatePresence>
+        <div className="space-y-8">
+          {/* Public clients */}
+          {publicClients.length > 0 && renderGrid(publicClients)}
+
+          {/* Private clients section */}
+          {privateClients.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-destructive/10 border border-destructive/30">
+                  <Lock className="w-3.5 h-3.5 text-destructive" />
+                  <span className="text-xs font-semibold text-destructive">Meus Clientes Privados</span>
+                  <span className="text-[10px] text-destructive/70">— Visível apenas para você</span>
+                </div>
+              </div>
+              {renderGrid(privateClients)}
+            </div>
+          )}
         </div>
       )}
 
