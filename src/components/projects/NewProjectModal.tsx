@@ -52,7 +52,7 @@ export default function NewProjectModal({ open, onClose, onSave }: Props) {
       await onSave({
         name: name.trim(),
         description: description.trim(),
-        status: 'negociando',
+        status: 'ativo',
         priority,
         service,
         recurrence,

@@ -209,16 +209,6 @@ export default function ProjectDetailModal({ project, open, onClose, onUpdate, o
                   {project.name}
                 </h2>
               )}
-              <Select value={project.status} onValueChange={v => update({ status: v as ProjectStatus })}>
-                <SelectTrigger className="w-[130px] h-7 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {PROJECT_STATUS_OPTIONS.map(o => (
-                    <SelectItem key={o.value} value={o.value}>{o.icon} {o.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
             <button onClick={onClose}><X className="w-5 h-5 text-muted-foreground" /></button>
           </div>

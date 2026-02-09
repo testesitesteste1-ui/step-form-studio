@@ -45,18 +45,12 @@ export default function ProjectGridView({ projects, onOpenProject }: Props) {
                 project.isOverdue && "border-red-500/50"
               )}
             >
-              {/* Status color header */}
-              <div className={cn("h-2 w-full", PROJECT_STATUS_COLORS[project.status].split(' ')[0])} />
-
               <div className="p-3.5">
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="flex items-center gap-1.5 min-w-0">
                     <h4 className="text-foreground font-semibold text-sm truncate">{project.name}</h4>
                     {project.favorite && <Star className="w-3 h-3 text-yellow-400 fill-yellow-400 shrink-0" />}
                   </div>
-                  <span className={cn("text-[9px] px-1.5 py-0.5 rounded-full border font-medium shrink-0", PROJECT_STATUS_COLORS[project.status])}>
-                    {PROJECT_STATUS_LABELS[project.status]}
-                  </span>
                 </div>
 
                 {/* Service + Priority */}
