@@ -1,9 +1,11 @@
 import { Loader2 } from "lucide-react";
+import { useMemo } from "react";
 import { useProjects } from "@/hooks/useProjects";
 import { useClients } from "@/hooks/useClients";
 import { useLeads } from "@/hooks/useLeads";
 import { useFinance } from "@/hooks/useFinance";
 import { useCalendar } from "@/hooks/useCalendar";
+import { useAuth } from "@/hooks/useAuth";
 import DashboardMetrics from "@/components/dashboard/DashboardMetrics";
 import RevenueChart from "@/components/dashboard/RevenueChart";
 import ProjectsOverview from "@/components/dashboard/ProjectsOverview";
@@ -12,11 +14,16 @@ import UpcomingEvents from "@/components/dashboard/UpcomingEvents";
 import PerformanceIndicators from "@/components/dashboard/PerformanceIndicators";
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const { projects, loading: loadingP } = useProjects();
   const { clients, loading: loadingC } = useClients();
   const { leads, loading: loadingL } = useLeads();
   const { transactions, loading: loadingF } = useFinance();
   const { allEvents, loading: loadingE } = useCalendar();
+
+  const visibleClients = useMemo(() => {
+    return clients.filter(c => !c.private || c.createdBy === user?.uid);
+  }, [clients, user]);
 
   const loading = loadingP || loadingC || loadingL || loadingF || loadingE;
 
@@ -37,11 +44,11 @@ export default function Dashboard() {
       </div>
 
       {/* Metric cards */}
-      <DashboardMetrics projects={projects} clients={clients} leads={leads} transactions={transactions} />
+      <DashboardMetrics projects={projects} clients={visibleClients} leads={leads} transactions={transactions} />
 
       {/* Charts row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <RevenueChart projects={projects} clients={clients} transactions={transactions} />
+        <RevenueChart projects={projects} clients={visibleClients} transactions={transactions} />
         <ProjectsOverview projects={projects} />
       </div>
 
@@ -49,7 +56,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <LeadsPipeline leads={leads} />
         <UpcomingEvents events={allEvents} projects={projects} />
-        <PerformanceIndicators projects={projects} leads={leads} clients={clients} transactions={transactions} />
+        <PerformanceIndicators projects={projects} leads={leads} clients={visibleClients} transactions={transactions} />
       </div>
     </div>
   );
