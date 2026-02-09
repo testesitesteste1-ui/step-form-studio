@@ -8,7 +8,7 @@ import { useCalendar } from "@/hooks/useCalendar";
 import { useAuth } from "@/hooks/useAuth";
 import DashboardMetrics from "@/components/dashboard/DashboardMetrics";
 import RevenueChart from "@/components/dashboard/RevenueChart";
-import ProjectsOverview from "@/components/dashboard/ProjectsOverview";
+import QuickNotes from "@/components/dashboard/QuickNotes";
 import LeadsPipeline from "@/components/dashboard/LeadsPipeline";
 import UpcomingEvents from "@/components/dashboard/UpcomingEvents";
 import PerformanceIndicators from "@/components/dashboard/PerformanceIndicators";
@@ -49,7 +49,7 @@ export default function Dashboard() {
       {/* Charts row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <RevenueChart projects={projects} clients={visibleClients} transactions={transactions} />
-        <ProjectsOverview projects={projects} />
+        <QuickNotes />
       </div>
 
       {/* Bottom row */}

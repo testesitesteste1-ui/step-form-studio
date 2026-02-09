@@ -78,9 +78,6 @@ export default function ProjectListView({ projects, groupBy, onOpenProject }: Pr
                           ))}
                         </div>
                       </div>
-                      <span className={cn("text-[10px] px-2 py-0.5 rounded-full border font-medium shrink-0", PROJECT_STATUS_COLORS[project.status])}>
-                        {PROJECT_STATUS_LABELS[project.status]}
-                      </span>
                     </div>
 
                     {/* Metrics grid */}
