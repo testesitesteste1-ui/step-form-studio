@@ -10,7 +10,7 @@ export default function Clients() {
   const { clients, loading, addClient, updateClient, deleteClient } = useClients();
   const { user } = useAuth();
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
-  const [initialTab, setInitialTab] = useState('projetos');
+  const [initialTab, setInitialTab] = useState('servicos');
   const location = useLocation();
 
   // Filter out private clients that don't belong to the current user
@@ -25,7 +25,7 @@ export default function Clients() {
       const client = visibleClients.find(c => c.id === state.openClientId);
       if (client) {
         setSelectedClient(client);
-        setInitialTab('projetos');
+        setInitialTab('servicos');
         window.history.replaceState({}, document.title);
       }
     }
@@ -35,7 +35,7 @@ export default function Clients() {
 
   const handleOpenClient = (client: Client, tab?: string) => {
     setSelectedClient(client);
-    setInitialTab(tab || 'projetos');
+    setInitialTab(tab || 'servicos');
   };
 
   if (liveClient) {

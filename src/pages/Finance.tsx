@@ -3,9 +3,10 @@
 // Integrates with Clients/Projects data + manual transactions
 // ═══════════════════════════════════════════════════════════
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useClients } from "@/hooks/useClients";
 import { useFinance } from "@/hooks/useFinance";
+import { useAuth } from "@/hooks/useAuth";
 import { PeriodFilter, PERIOD_LABELS, getPeriodRange } from "@/lib/finance-data";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -22,8 +23,14 @@ import RelatoriosTab from "@/components/finance/RelatoriosTab";
 
 export default function Finance() {
   const { clients } = useClients();
+  const { user } = useAuth();
   const { transactions, addTransaction, updateTransaction, deleteTransaction } = useFinance();
   const [period, setPeriod] = useState<PeriodFilter>('mes_atual');
+
+  // Filter out private clients that don't belong to the current user
+  const visibleClients = useMemo(() => {
+    return clients.filter(c => !c.private || c.createdBy === user?.uid);
+  }, [clients, user]);
   const [txModal, setTxModal] = useState(false);
   const [txType, setTxType] = useState<'receita' | 'despesa'>('receita');
 
@@ -58,7 +65,7 @@ export default function Finance() {
       </div>
 
       {/* Metrics Cards */}
-      <FinanceMetrics clients={clients} transactions={transactions} period={period} />
+      <FinanceMetrics clients={visibleClients} transactions={transactions} period={period} />
 
       {/* Tabs */}
       <Tabs defaultValue="receitas" className="w-full">
@@ -73,7 +80,7 @@ export default function Finance() {
 
         <TabsContent value="receitas" className="mt-4">
           <ReceitasTab
-            clients={clients} transactions={transactions}
+            clients={visibleClients} transactions={transactions}
             start={start} end={end}
             onAddRevenue={() => openModal('receita')}
             onDelete={deleteTransaction}
@@ -90,7 +97,7 @@ export default function Finance() {
         </TabsContent>
 
         <TabsContent value="a_receber" className="mt-4">
-          <AReceberTab clients={clients} />
+          <AReceberTab clients={visibleClients} />
         </TabsContent>
 
         <TabsContent value="a_pagar" className="mt-4">
@@ -102,11 +109,11 @@ export default function Finance() {
         </TabsContent>
 
         <TabsContent value="fluxo" className="mt-4">
-          <FluxoCaixaTab clients={clients} transactions={transactions} />
+          <FluxoCaixaTab clients={visibleClients} transactions={transactions} />
         </TabsContent>
 
         <TabsContent value="relatorios" className="mt-4">
-          <RelatoriosTab clients={clients} transactions={transactions} />
+          <RelatoriosTab clients={visibleClients} transactions={transactions} />
         </TabsContent>
       </Tabs>
 
@@ -115,7 +122,7 @@ export default function Finance() {
         open={txModal}
         onClose={() => setTxModal(false)}
         onSave={addTransaction}
-        clients={clients}
+        clients={visibleClients}
         defaultType={txType}
       />
     </div>

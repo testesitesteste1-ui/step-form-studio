@@ -1,10 +1,13 @@
 export type ClientStatus = 'proposta' | 'ativo' | 'pausado' | 'finalizado' | 'perdido';
-export type ClientService = 'sistemas' | 'marketing' | 'marketing_sistemas';
+export type ClientServiceType = 'social_media' | 'trafego_pago' | 'google_meu_negocio' | 'sites' | 'automacoes';
 export type InteractionType = 'ligacao' | 'email' | 'whatsapp' | 'reuniao' | 'nota';
 export type ProjectStatus = 'negociando' | 'ativo' | 'pausado' | 'concluido';
 export type TaskPriority = 'baixa' | 'media' | 'alta' | 'urgente';
 export type TaskColumn = 'backlog' | 'todo' | 'doing' | 'review' | 'done';
 export type DocumentCategory = 'contratos' | 'propostas' | 'briefings' | 'outros';
+
+// Legacy type kept for backwards compatibility
+export type ClientService = 'sistemas' | 'marketing' | 'marketing_sistemas';
 
 export interface ClientInteraction {
   id: string;
@@ -64,7 +67,7 @@ export interface ProjectCost {
   description: string;
   value: number;
   date: string;
-  category: string; // ex: 'freelancer', 'software', 'ads', 'infraestrutura', 'outros'
+  category: string;
 }
 
 export const PROJECT_COST_CATEGORIES: Record<string, string> = {
@@ -81,7 +84,7 @@ export interface Project {
   name: string;
   description: string;
   value: number;
-  cost: number; // custo estimado do projeto
+  cost: number;
   paidAmount: number;
   status: ProjectStatus;
   startDate: string;
@@ -89,11 +92,73 @@ export interface Project {
   notes: ProjectNote[];
   links: ProjectLink[];
   payments: ProjectPayment[];
-  costs: ProjectCost[]; // custos reais do projeto
+  costs: ProjectCost[];
+}
+
+// ═══════════════════════════════════════════════════════════
+// Service-specific data interfaces
+// ═══════════════════════════════════════════════════════════
+
+export interface SocialMediaData {
+  platforms: string[]; // instagram, facebook, tiktok, linkedin, youtube, twitter
+  postingFrequency: string; // ex: "3x por semana"
+  contentTypes: string[]; // feed, stories, reels, carrossel
+  followers: Record<string, number>; // { instagram: 5000, ... }
+  observations: string;
+}
+
+export interface TrafegoPagoData {
+  platforms: string[]; // meta_ads, google_ads, tiktok_ads
+  monthlyBudget: number;
+  currentROI: number; // percentage
+  campaigns: number;
+  adAccountIds: Record<string, string>; // { meta: "act_xxx", google: "xxx" }
+  objectives: string; // vendas, leads, tráfego, reconhecimento
+  observations: string;
+}
+
+export interface GoogleMeuNegocioData {
+  profileUrl: string;
+  businessName: string;
+  category: string;
+  reviewCount: number;
+  averageRating: number;
+  postsPerMonth: number;
+  observations: string;
+}
+
+export interface SitesData {
+  domain: string;
+  hosting: string;
+  platform: string; // wordpress, lovable, custom, wix, shopify
+  status: string; // em_desenvolvimento, ativo, manutencao
+  launchDate: string;
+  pages: number;
+  hasSEO: boolean;
+  hasAnalytics: boolean;
+  observations: string;
+}
+
+export interface AutomacoesData {
+  tools: string[]; // n8n, make, zapier, custom
+  activeFlows: number;
+  integrations: string[]; // whatsapp, email, crm, erp
+  description: string;
+  observations: string;
+}
+
+export interface ServiceData {
+  social_media?: SocialMediaData;
+  trafego_pago?: TrafegoPagoData;
+  google_meu_negocio?: GoogleMeuNegocioData;
+  sites?: SitesData;
+  automacoes?: AutomacoesData;
 }
 
 export interface Client {
-  service: ClientService;
+  service: ClientService; // legacy
+  services?: ClientServiceType[]; // new multi-select
+  serviceData?: ServiceData; // detailed data per service
   id: string;
   name: string;
   private?: boolean;
@@ -152,6 +217,30 @@ export const CLIENT_SERVICE_LABELS: Record<ClientService, string> = {
   sistemas: 'Sistemas',
   marketing: 'Marketing',
   marketing_sistemas: 'Marketing e Sistemas',
+};
+
+export const SERVICE_TYPE_LABELS: Record<ClientServiceType, string> = {
+  social_media: 'Social Media',
+  trafego_pago: 'Tráfego Pago',
+  google_meu_negocio: 'Google Meu Negócio',
+  sites: 'Sites',
+  automacoes: 'Automações',
+};
+
+export const SERVICE_TYPE_ICONS: Record<ClientServiceType, string> = {
+  social_media: '📱',
+  trafego_pago: '🎯',
+  google_meu_negocio: '📍',
+  sites: '🌐',
+  automacoes: '⚙️',
+};
+
+export const SERVICE_TYPE_COLORS: Record<ClientServiceType, string> = {
+  social_media: 'bg-pink-500/20 text-pink-400 border-pink-500/30',
+  trafego_pago: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+  google_meu_negocio: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  sites: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
+  automacoes: 'bg-violet-500/20 text-violet-400 border-violet-500/30',
 };
 
 export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
@@ -260,4 +349,16 @@ export function getMonthsSince(dateStr: string): number {
 
 export function newId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+// Helper to get display labels for a client's services
+export function getClientServiceLabels(client: Client): string[] {
+  if (client.services && client.services.length > 0) {
+    return client.services.map(s => SERVICE_TYPE_LABELS[s]);
+  }
+  // Fallback to legacy service field
+  if (client.service) {
+    return [CLIENT_SERVICE_LABELS[client.service]];
+  }
+  return [];
 }
