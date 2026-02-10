@@ -30,6 +30,8 @@ function parseClient(firebaseKey: string, value: any): Client {
   return {
     id: firebaseKey,
     service: value.service || 'sistemas',
+    services: toArray(value.services).length > 0 ? toArray(value.services) : [],
+    serviceData: value.serviceData || {},
     name: value.name || '',
     company: value.company || '',
     segment: value.segment || '',

@@ -4,7 +4,7 @@
 
 import { useMemo } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { Client, formatCurrency, CLIENT_SERVICE_LABELS } from "@/lib/clients-data";
+import { Client, formatCurrency, CLIENT_SERVICE_LABELS, SERVICE_TYPE_LABELS, ClientServiceType } from "@/lib/clients-data";
 import { Transaction, isInPeriod, getLast6Months } from "@/lib/finance-data";
 import { FileText, Users, Briefcase, TrendingUp } from "lucide-react";
 
@@ -33,14 +33,20 @@ export default function RelatoriosTab({ clients, transactions }: Props) {
   const serviceRevenue = useMemo(() => {
     const map: Record<string, number> = {};
     clients.forEach(c => {
-      const service = c.service || 'sistemas';
       const total = c.projects.reduce((sum, p) => sum + (p.value || 0), 0);
-      map[service] = (map[service] || 0) + total;
+      if (c.services && c.services.length > 0) {
+        // Distribute evenly across services
+        const perService = total / c.services.length;
+        c.services.forEach(s => {
+          const label = SERVICE_TYPE_LABELS[s];
+          map[label] = (map[label] || 0) + perService;
+        });
+      } else {
+        const label = CLIENT_SERVICE_LABELS[c.service] || 'Outros';
+        map[label] = (map[label] || 0) + total;
+      }
     });
-    return Object.entries(map).map(([key, value]) => ({
-      name: CLIENT_SERVICE_LABELS[key as keyof typeof CLIENT_SERVICE_LABELS] || key,
-      value,
-    }));
+    return Object.entries(map).map(([name, value]) => ({ name, value }));
   }, [clients]);
 
   // ─── Report 3: Monthly trend ───

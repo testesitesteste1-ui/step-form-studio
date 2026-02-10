@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Trash2, FolderOpen, DollarSign } from "lucide-react";
-import { Client, CLIENT_STATUS_LABELS, CLIENT_STATUS_COLORS, CLIENT_STATUS_ICONS, getAvatarColor, getInitials, formatCurrency } from "@/lib/clients-data";
+import { ArrowLeft, Trash2, FolderOpen, DollarSign, Sparkles } from "lucide-react";
+import { Client, CLIENT_STATUS_LABELS, CLIENT_STATUS_COLORS, CLIENT_STATUS_ICONS, SERVICE_TYPE_LABELS, SERVICE_TYPE_ICONS, SERVICE_TYPE_COLORS, getAvatarColor, getInitials, formatCurrency } from "@/lib/clients-data";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,7 @@ import ClientProjectsTab from "./tabs/ClientProjectsTab";
 import ClientInfoTab from "./tabs/ClientInfoTab";
 import ClientHistoryTab from "./tabs/ClientHistoryTab";
 import ClientNotesTab from "./tabs/ClientNotesTab";
+import ClientServicesTab from "./tabs/ClientServicesTab";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
@@ -62,6 +63,17 @@ export default function ClientDetail({ client, initialTab = 'projetos', onBack, 
         </div>
       </div>
 
+      {/* Service badges */}
+      {(client.services || []).length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {(client.services || []).map(s => (
+            <span key={s} className={cn("text-[10px] px-2.5 py-1 rounded-full border font-medium inline-flex items-center gap-1", SERVICE_TYPE_COLORS[s])}>
+              {SERVICE_TYPE_ICONS[s]} {SERVICE_TYPE_LABELS[s]}
+            </span>
+          ))}
+        </div>
+      )}
+
       {/* Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
@@ -81,11 +93,15 @@ export default function ClientDetail({ client, initialTab = 'projetos', onBack, 
       {/* Tabs */}
       <Tabs defaultValue={initialTab} className="w-full">
         <TabsList className="w-full justify-start overflow-x-auto">
+          <TabsTrigger value="servicos">Serviços</TabsTrigger>
           <TabsTrigger value="projetos">Projetos</TabsTrigger>
           <TabsTrigger value="informacoes">Informações</TabsTrigger>
           <TabsTrigger value="historico">Histórico</TabsTrigger>
           <TabsTrigger value="notas">Notas</TabsTrigger>
         </TabsList>
+        <TabsContent value="servicos">
+          <ClientServicesTab client={client} onUpdate={onUpdate} />
+        </TabsContent>
         <TabsContent value="projetos">
           <ClientProjectsTab client={client} onUpdate={onUpdate} />
         </TabsContent>

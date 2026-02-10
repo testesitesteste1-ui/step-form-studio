@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Star, DollarSign, Pencil, Lock } from "lucide-react";
-import { Client, CLIENT_STATUS_LABELS, CLIENT_STATUS_COLORS, CLIENT_STATUS_ICONS, CLIENT_SERVICE_LABELS, getAvatarColor, getInitials, formatCurrency } from "@/lib/clients-data";
+import { Client, CLIENT_STATUS_LABELS, CLIENT_STATUS_COLORS, CLIENT_STATUS_ICONS, SERVICE_TYPE_LABELS, SERVICE_TYPE_ICONS, SERVICE_TYPE_COLORS, ClientServiceType, getAvatarColor, getInitials, formatCurrency } from "@/lib/clients-data";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +16,8 @@ export default function ClientCard({ client, onOpen, onEdit, onToggleFavorite }:
   const totalPaid = client.projects.reduce((sum, p) => sum + ((p.payments || []).reduce((s, pay) => s + pay.value, 0)), 0);
   const remaining = totalValue - totalPaid;
   const avatarColor = getAvatarColor(client.name);
+
+  const services = client.services && client.services.length > 0 ? client.services : [];
 
   return (
     <motion.div
@@ -43,14 +45,20 @@ export default function ClientCard({ client, onOpen, onEdit, onToggleFavorite }:
           <div className="min-w-0">
             <h3 className="text-foreground font-semibold text-base truncate">{client.name}</h3>
             <p className="text-muted-foreground text-xs truncate">{client.company || client.segment || '—'}</p>
-            {client.service && (
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">
-                {CLIENT_SERVICE_LABELS[client.service]}
-              </span>
-            )}
           </div>
         </div>
       </div>
+
+      {/* Service badges */}
+      {services.length > 0 && (
+        <div className="px-5 pb-3 flex flex-wrap gap-1.5">
+          {services.map(s => (
+            <span key={s} className={cn("text-[10px] px-2 py-0.5 rounded-full border font-medium inline-flex items-center gap-1", SERVICE_TYPE_COLORS[s])}>
+              {SERVICE_TYPE_ICONS[s]} {SERVICE_TYPE_LABELS[s]}
+            </span>
+          ))}
+        </div>
+      )}
 
       {/* Mini Metrics Grid */}
       <div className="grid grid-cols-3 gap-2 px-5 pb-4">

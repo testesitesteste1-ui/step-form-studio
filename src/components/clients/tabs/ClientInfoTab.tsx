@@ -1,17 +1,20 @@
 import { useState } from "react";
 import { Copy, ExternalLink, MessageCircle } from "lucide-react";
-import { Client, ClientStatus, CLIENT_STATUS_LABELS, ClientService, CLIENT_SERVICE_LABELS } from "@/lib/clients-data";
+import { Client, ClientStatus, CLIENT_STATUS_LABELS, ClientServiceType, SERVICE_TYPE_LABELS, SERVICE_TYPE_ICONS, SERVICE_TYPE_COLORS } from "@/lib/clients-data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface Props {
   client: Client;
   onUpdate: (client: Client) => Promise<void>;
 }
+
+const ALL_SERVICES: ClientServiceType[] = ['trafego_pago', 'social_media', 'google_meu_negocio', 'sites', 'automacoes'];
 
 export default function ClientInfoTab({ client, onUpdate }: Props) {
   const { toast } = useToast();
@@ -19,6 +22,14 @@ export default function ClientInfoTab({ client, onUpdate }: Props) {
   const [saving, setSaving] = useState(false);
 
   const update = (key: keyof Client, value: any) => setForm(prev => ({ ...prev, [key]: value }));
+
+  const toggleService = (service: ClientServiceType) => {
+    const current = form.services || [];
+    const updated = current.includes(service)
+      ? current.filter(s => s !== service)
+      : [...current, service];
+    setForm(prev => ({ ...prev, services: updated }));
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -58,17 +69,32 @@ export default function ClientInfoTab({ client, onUpdate }: Props) {
               </SelectContent>
             </Select>
           </div>
-          <div>
-            <Label>Serviço</Label>
-            <Select value={form.service || 'sistemas'} onValueChange={v => update('service', v)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {Object.entries(CLIENT_SERVICE_LABELS).map(([k, v]) => (
-                  <SelectItem key={k} value={k}>{v}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        </div>
+      </section>
+
+      {/* Serviços */}
+      <section>
+        <h3 className="text-sm font-semibold text-foreground mb-3">Serviços Contratados</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          {ALL_SERVICES.map(service => {
+            const isActive = (form.services || []).includes(service);
+            return (
+              <button
+                key={service}
+                type="button"
+                onClick={() => toggleService(service)}
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2.5 rounded-lg border-2 text-left transition-all text-xs font-medium",
+                  isActive
+                    ? SERVICE_TYPE_COLORS[service] + " border-current"
+                    : "border-border bg-secondary/30 text-muted-foreground hover:border-muted-foreground/50"
+                )}
+              >
+                <span className="text-base">{SERVICE_TYPE_ICONS[service]}</span>
+                <span>{SERVICE_TYPE_LABELS[service]}</span>
+              </button>
+            );
+          })}
         </div>
       </section>
 
