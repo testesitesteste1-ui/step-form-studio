@@ -15,8 +15,8 @@
     --popover: 200 20% 12%;
     --popover-foreground: 180 10% 95%;
 
-    --primary: 180 60% 45%;
-    --primary-foreground: 200 25% 8%;
+    --primary: 270 100% 60%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 200 20% 16%;
     --secondary-foreground: 180 10% 90%;
@@ -32,7 +32,7 @@
 
     --border: 200 15% 20%;
     --input: 200 20% 15%;
-    --ring: 180 60% 45%;
+    --ring: 270 100% 60%;
 
     --radius: 0.75rem;
   }
@@ -86,7 +86,7 @@
 }
 
 .animate-shimmer {
-  background: linear-gradient(90deg, transparent 0%, hsl(180 60% 45% / 0.3) 50%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, hsl(270 100% 60% / 0.3) 50%, transparent 100%);
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
 }
