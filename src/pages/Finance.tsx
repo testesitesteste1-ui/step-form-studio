@@ -1,6 +1,7 @@
 // ═══════════════════════════════════════════════════════════
 // Finance Page - Main financial management dashboard
 // Integrates with Clients/Projects data + manual transactions
+// Filters out private clients not owned by the current user
 // ═══════════════════════════════════════════════════════════
 
 import { useState, useMemo } from "react";
@@ -28,9 +29,27 @@ export default function Finance() {
   const [period, setPeriod] = useState<PeriodFilter>('mes_atual');
 
   // Filter out private clients that don't belong to the current user
+  // Also filter transactions linked to private clients
   const visibleClients = useMemo(() => {
-    return clients.filter(c => !c.private || c.createdBy === user?.uid);
+    if (!user) return clients.filter(c => !c.private);
+    return clients.filter(c => !c.private || c.createdBy === user.uid);
   }, [clients, user]);
+
+  const privateClientIds = useMemo(() => {
+    const allPrivateIds = new Set(clients.filter(c => c.private).map(c => c.id));
+    const myPrivateIds = new Set(
+      clients.filter(c => c.private && c.createdBy === user?.uid).map(c => c.id)
+    );
+    // IDs that are private but NOT mine — these should be hidden
+    const hiddenIds = new Set([...allPrivateIds].filter(id => !myPrivateIds.has(id)));
+    return hiddenIds;
+  }, [clients, user]);
+
+  // Filter transactions: hide those linked to hidden private clients
+  const visibleTransactions = useMemo(() => {
+    return transactions.filter(t => !t.clientId || !privateClientIds.has(t.clientId));
+  }, [transactions, privateClientIds]);
+
   const [txModal, setTxModal] = useState(false);
   const [txType, setTxType] = useState<'receita' | 'despesa'>('receita');
 
@@ -65,7 +84,7 @@ export default function Finance() {
       </div>
 
       {/* Metrics Cards */}
-      <FinanceMetrics clients={visibleClients} transactions={transactions} period={period} />
+      <FinanceMetrics clients={visibleClients} transactions={visibleTransactions} period={period} />
 
       {/* Tabs */}
       <Tabs defaultValue="receitas" className="w-full">
@@ -80,7 +99,7 @@ export default function Finance() {
 
         <TabsContent value="receitas" className="mt-4">
           <ReceitasTab
-            clients={visibleClients} transactions={transactions}
+            clients={visibleClients} transactions={visibleTransactions}
             start={start} end={end}
             onAddRevenue={() => openModal('receita')}
             onDelete={deleteTransaction}
@@ -89,7 +108,7 @@ export default function Finance() {
 
         <TabsContent value="despesas" className="mt-4">
           <DespesasTab
-            transactions={transactions}
+            transactions={visibleTransactions}
             start={start} end={end}
             onAddExpense={() => openModal('despesa')}
             onDelete={deleteTransaction}
@@ -102,18 +121,18 @@ export default function Finance() {
 
         <TabsContent value="a_pagar" className="mt-4">
           <APagarTab
-            transactions={transactions}
+            transactions={visibleTransactions}
             onUpdate={updateTransaction}
             onDelete={deleteTransaction}
           />
         </TabsContent>
 
         <TabsContent value="fluxo" className="mt-4">
-          <FluxoCaixaTab clients={visibleClients} transactions={transactions} />
+          <FluxoCaixaTab clients={visibleClients} transactions={visibleTransactions} />
         </TabsContent>
 
         <TabsContent value="relatorios" className="mt-4">
-          <RelatoriosTab clients={visibleClients} transactions={transactions} />
+          <RelatoriosTab clients={visibleClients} transactions={visibleTransactions} />
         </TabsContent>
       </Tabs>
 
