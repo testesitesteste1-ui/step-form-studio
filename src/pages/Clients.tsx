@@ -10,22 +10,20 @@ export default function Clients() {
   const { clients, loading, addClient, updateClient, deleteClient } = useClients();
   const { user } = useAuth();
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
-  const [initialTab, setInitialTab] = useState('servicos');
+  const [initialTab, setInitialTab] = useState('condominios');
   const location = useLocation();
 
-  // Filter out private clients that don't belong to the current user
   const visibleClients = useMemo(() => {
     return clients.filter(c => !c.private || c.createdBy === user?.uid);
   }, [clients, user]);
 
-  // Handle navigation from Projects page
   useEffect(() => {
-    const state = location.state as { openClientId?: string; openProjectId?: string } | null;
+    const state = location.state as { openClientId?: string } | null;
     if (state?.openClientId && visibleClients.length > 0) {
       const client = visibleClients.find(c => c.id === state.openClientId);
       if (client) {
         setSelectedClient(client);
-        setInitialTab('servicos');
+        setInitialTab('condominios');
         window.history.replaceState({}, document.title);
       }
     }
@@ -35,32 +33,20 @@ export default function Clients() {
 
   const handleOpenClient = (client: Client, tab?: string) => {
     setSelectedClient(client);
-    setInitialTab(tab || 'servicos');
+    setInitialTab(tab || (client.type === 'administradora' ? 'condominios' : 'informacoes'));
   };
 
   if (liveClient) {
     return (
       <div className="p-4 md:p-6 max-w-7xl mx-auto">
-        <ClientDetail
-          client={liveClient}
-          initialTab={initialTab}
-          onBack={() => setSelectedClient(null)}
-          onUpdate={updateClient}
-          onDelete={deleteClient}
-        />
+        <ClientDetail client={liveClient} initialTab={initialTab} onBack={() => setSelectedClient(null)} onUpdate={updateClient} onDelete={deleteClient} />
       </div>
     );
   }
 
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto">
-      <ClientsList
-        clients={visibleClients}
-        loading={loading}
-        onOpenClient={handleOpenClient}
-        onAddClient={addClient}
-        onUpdateClient={updateClient}
-      />
+      <ClientsList clients={visibleClients} loading={loading} onOpenClient={handleOpenClient} onAddClient={addClient} onUpdateClient={updateClient} />
     </div>
   );
 }

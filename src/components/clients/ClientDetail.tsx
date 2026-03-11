@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Trash2, FolderOpen, DollarSign, Target, Megaphone, MapPin, Globe, Zap, MessageCircle, Mail, ExternalLink, Copy, Lock, Calendar, TrendingUp, CheckCircle2 } from "lucide-react";
-import { Client, CLIENT_STATUS_LABELS, CLIENT_STATUS_COLORS, ClientServiceType, SERVICE_TYPE_LABELS, SERVICE_TYPE_COLORS, getAvatarColor, getInitials, formatCurrency, getDaysSince } from "@/lib/clients-data";
+import { ArrowLeft, Trash2, FolderOpen, DollarSign, Building2, UserCheck, MessageCircle, Mail, Copy, Lock, Calendar, TrendingUp, CheckCircle2, Building } from "lucide-react";
+import { Client, CLIENT_STATUS_LABELS, CLIENT_STATUS_COLORS, CLIENT_TYPE_LABELS, getAvatarColor, getInitials, formatCurrency, getDaysSince } from "@/lib/clients-data";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
@@ -10,7 +10,7 @@ import ClientProjectsTab from "./tabs/ClientProjectsTab";
 import ClientInfoTab from "./tabs/ClientInfoTab";
 import ClientHistoryTab from "./tabs/ClientHistoryTab";
 import ClientNotesTab from "./tabs/ClientNotesTab";
-import ClientServicesTab from "./tabs/ClientServicesTab";
+import ClientCondominiosTab from "./tabs/ClientCondominiosTab";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
@@ -23,15 +23,7 @@ interface Props {
   onDelete: (id: string) => Promise<void>;
 }
 
-const SERVICE_DETAIL_ICONS: Record<ClientServiceType, React.ReactNode> = {
-  trafego_pago: <Target className="w-4 h-4" />,
-  social_media: <Megaphone className="w-4 h-4" />,
-  google_meu_negocio: <MapPin className="w-4 h-4" />,
-  sites: <Globe className="w-4 h-4" />,
-  automacoes: <Zap className="w-4 h-4" />,
-};
-
-export default function ClientDetail({ client, initialTab = 'servicos', onBack, onUpdate, onDelete }: Props) {
+export default function ClientDetail({ client, initialTab = 'condominios', onBack, onUpdate, onDelete }: Props) {
   const { toast } = useToast();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const avatarColor = getAvatarColor(client.name);
@@ -47,7 +39,8 @@ export default function ClientDetail({ client, initialTab = 'servicos', onBack, 
   }, [client]);
 
   const daysSinceContact = getDaysSince(client.lastContact);
-  const services = client.services || [];
+  const condCount = (client.condominios || []).length;
+  const defaultTab = client.type === 'administradora' ? (initialTab || 'condominios') : (initialTab || 'informacoes');
 
   const handleDelete = async () => {
     await onDelete(client.id);
@@ -72,29 +65,19 @@ export default function ClientDetail({ client, initialTab = 'servicos', onBack, 
         </Button>
       </div>
 
-      {/* Client Header Card */}
-      <div className={cn(
-        "rounded-xl border overflow-hidden",
-        client.private ? "border-destructive/30" : "border-border/60"
-      )}>
-        {/* Accent bar */}
-        <div className={cn(
-          "h-1",
+      {/* Client Header */}
+      <div className={cn("rounded-xl border overflow-hidden", client.private ? "border-destructive/30" : "border-border/60")}>
+        <div className={cn("h-1",
           client.status === 'ativo' ? 'bg-emerald-500' :
           client.status === 'proposta' ? 'bg-blue-500' :
           client.status === 'pausado' ? 'bg-yellow-500' :
-          client.status === 'finalizado' ? 'bg-primary' :
-          'bg-red-500'
+          client.status === 'finalizado' ? 'bg-primary' : 'bg-red-500'
         )} />
 
         <div className="p-5">
           <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-            {/* Avatar + Name */}
             <div className="flex items-center gap-4 flex-1 min-w-0">
-              <div className={cn(
-                "w-14 h-14 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-bold text-xl shrink-0",
-                avatarColor
-              )}>
+              <div className={cn("w-14 h-14 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-bold text-xl shrink-0", avatarColor)}>
                 {getInitials(client.name)}
               </div>
               <div className="min-w-0">
@@ -106,13 +89,21 @@ export default function ClientDetail({ client, initialTab = 'servicos', onBack, 
                     </span>
                   )}
                 </div>
-                <p className="text-muted-foreground text-sm">{client.company || client.segment || '—'}</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  {client.type === 'administradora' ? <Building2 className="w-3.5 h-3.5 text-muted-foreground" /> : <UserCheck className="w-3.5 h-3.5 text-muted-foreground" />}
+                  <p className="text-muted-foreground text-sm">{CLIENT_TYPE_LABELS[client.type]}</p>
+                  {client.contactName && <span className="text-muted-foreground text-sm">• {client.contactName}</span>}
+                </div>
                 <div className="flex items-center gap-2 mt-1.5">
                   <span className={cn("text-[10px] px-2 py-0.5 rounded-md font-medium", CLIENT_STATUS_COLORS[client.status])}>
                     {CLIENT_STATUS_LABELS[client.status]}
                   </span>
-                  <span className={cn(
-                    "text-[10px] flex items-center gap-1",
+                  {client.type === 'administradora' && (
+                    <span className="text-[10px] text-amber-400 flex items-center gap-1">
+                      <Building className="w-3 h-3" /> {condCount} condomínio{condCount !== 1 ? 's' : ''}
+                    </span>
+                  )}
+                  <span className={cn("text-[10px] flex items-center gap-1",
                     daysSinceContact > 30 ? "text-red-400" : daysSinceContact > 14 ? "text-yellow-400" : "text-muted-foreground"
                   )}>
                     <Calendar className="w-3 h-3" />
@@ -122,11 +113,10 @@ export default function ClientDetail({ client, initialTab = 'servicos', onBack, 
               </div>
             </div>
 
-            {/* Quick contact actions */}
             <div className="flex items-center gap-1.5 shrink-0">
-              {client.whatsapp && (
+              {client.phone && (
                 <Button variant="outline" size="sm" className="gap-1 text-xs" asChild>
-                  <a href={`https://wa.me/${client.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
+                  <a href={`https://wa.me/${client.phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
                     <MessageCircle className="w-3.5 h-3.5 text-emerald-400" /> WhatsApp
                   </a>
                 </Button>
@@ -138,24 +128,8 @@ export default function ClientDetail({ client, initialTab = 'servicos', onBack, 
                   </a>
                 </Button>
               )}
-              {client.phone && (
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => copyToClipboard(client.phone)}>
-                  <Copy className="w-3.5 h-3.5" />
-                </Button>
-              )}
             </div>
           </div>
-
-          {/* Service badges */}
-          {services.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mt-4">
-              {services.map(s => (
-                <span key={s} className={cn("text-[10px] px-2.5 py-1 rounded-md border font-medium inline-flex items-center gap-1.5", SERVICE_TYPE_COLORS[s])}>
-                  {SERVICE_DETAIL_ICONS[s]} {SERVICE_TYPE_LABELS[s]}
-                </span>
-              ))}
-            </div>
-          )}
         </div>
       </div>
 
@@ -169,11 +143,7 @@ export default function ClientDetail({ client, initialTab = 'servicos', onBack, 
           { label: 'Lucro', value: formatCurrency(financials.profit), color: financials.profit >= 0 ? 'text-emerald-400' : 'text-red-400', icon: TrendingUp },
           { label: 'Tarefas', value: `${financials.completedTasks}/${financials.totalTasks}`, color: 'text-primary', icon: CheckCircle2 },
         ].map((m, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.03 }}
+          <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
             className="bg-card border border-border/50 rounded-xl p-3"
           >
             <m.icon className={cn("w-4 h-4 mb-1.5", m.color)} />
@@ -184,11 +154,13 @@ export default function ClientDetail({ client, initialTab = 'servicos', onBack, 
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue={initialTab} className="w-full">
+      <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList className="w-full justify-start overflow-x-auto">
-          <TabsTrigger value="servicos" className="gap-1 text-xs">
-            <Target className="w-3 h-3" /> Serviços
-          </TabsTrigger>
+          {client.type === 'administradora' && (
+            <TabsTrigger value="condominios" className="gap-1 text-xs">
+              <Building className="w-3 h-3" /> Condomínios
+            </TabsTrigger>
+          )}
           <TabsTrigger value="projetos" className="gap-1 text-xs">
             <FolderOpen className="w-3 h-3" /> Projetos
           </TabsTrigger>
@@ -202,9 +174,11 @@ export default function ClientDetail({ client, initialTab = 'servicos', onBack, 
             Notas
           </TabsTrigger>
         </TabsList>
-        <TabsContent value="servicos">
-          <ClientServicesTab client={client} onUpdate={onUpdate} />
-        </TabsContent>
+        {client.type === 'administradora' && (
+          <TabsContent value="condominios">
+            <ClientCondominiosTab client={client} onUpdate={onUpdate} />
+          </TabsContent>
+        )}
         <TabsContent value="projetos">
           <ClientProjectsTab client={client} onUpdate={onUpdate} />
         </TabsContent>
@@ -225,7 +199,7 @@ export default function ClientDetail({ client, initialTab = 'servicos', onBack, 
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir cliente?</AlertDialogTitle>
             <AlertDialogDescription>
-              Isso removerá permanentemente <strong>{client.name}</strong> e todos os dados associados (projetos, pagamentos, histórico).
+              Isso removerá permanentemente <strong>{client.name}</strong> e todos os dados associados (condomínios, projetos, pagamentos, histórico).
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
