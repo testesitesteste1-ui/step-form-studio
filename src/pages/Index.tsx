@@ -11,8 +11,8 @@ export default function Index() {
       {/* Header */}
       <header className="border-b border-border px-4 md:px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <img src={logo} alt="NeuraSys" className="w-8 h-8 object-contain" />
-          <span className="text-lg font-bold text-foreground tracking-tight">NeuraSys</span>
+          <img src={logo} alt="Ex Eventos" className="w-8 h-8 object-contain" />
+          <span className="text-lg font-bold text-foreground tracking-tight">Ex Eventos</span>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-sm text-muted-foreground hidden sm:inline">{user?.email}</span>
