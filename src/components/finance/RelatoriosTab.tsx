@@ -4,7 +4,7 @@
 
 import { useMemo } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { Client, formatCurrency, CLIENT_SERVICE_LABELS, SERVICE_TYPE_LABELS, ClientServiceType } from "@/lib/clients-data";
+import { Client, formatCurrency, CLIENT_TYPE_LABELS } from "@/lib/clients-data";
 import { Transaction, isInPeriod, getLast6Months } from "@/lib/finance-data";
 import { FileText, Users, Briefcase, TrendingUp } from "lucide-react";
 
@@ -29,24 +29,15 @@ export default function RelatoriosTab({ clients, transactions }: Props) {
       .slice(0, 8);
   }, [clients]);
 
-  // ─── Report 2: Revenue by service type ───
-  const serviceRevenue = useMemo(() => {
+  // ─── Report 2: Revenue by client type ───
+  const typeRevenue = useMemo(() => {
     const map: Record<string, number> = {};
     clients.forEach(c => {
       const total = c.projects.reduce((sum, p) => sum + (p.value || 0), 0);
-      if (c.services && c.services.length > 0) {
-        // Distribute evenly across services
-        const perService = total / c.services.length;
-        c.services.forEach(s => {
-          const label = SERVICE_TYPE_LABELS[s];
-          map[label] = (map[label] || 0) + perService;
-        });
-      } else {
-        const label = CLIENT_SERVICE_LABELS[c.service] || 'Outros';
-        map[label] = (map[label] || 0) + total;
-      }
+      const label = CLIENT_TYPE_LABELS[c.type] || 'Outros';
+      map[label] = (map[label] || 0) + total;
     });
-    return Object.entries(map).map(([name, value]) => ({ name, value }));
+    return Object.entries(map).map(([name, value]) => ({ name, value })).filter(e => e.value > 0);
   }, [clients]);
 
   // ─── Report 3: Monthly trend ───
@@ -105,22 +96,21 @@ export default function RelatoriosTab({ clients, transactions }: Props) {
         )}
       </div>
 
-      {/* Report 2: By Service + Report 4: Profitability side by side on desktop */}
+      {/* Report 2: By Type + Report 4: Profitability */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* By Service */}
         <div className="bg-card border border-border rounded-xl p-4">
           <div className="flex items-center gap-2 mb-4">
             <Briefcase className="w-5 h-5 text-purple-400" />
-            <h3 className="text-sm font-semibold text-foreground">Receita por Serviço</h3>
+            <h3 className="text-sm font-semibold text-foreground">Receita por Tipo de Cliente</h3>
           </div>
-          {serviceRevenue.length === 0 ? (
+          {typeRevenue.length === 0 ? (
             <p className="text-center text-muted-foreground py-8 text-sm">Sem dados</p>
           ) : (
             <div className="h-[200px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={serviceRevenue} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
-                    {serviceRevenue.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                  <Pie data={typeRevenue} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
+                    {typeRevenue.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
                   </Pie>
                   <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} formatter={formatTooltip} />
                 </PieChart>
@@ -129,7 +119,6 @@ export default function RelatoriosTab({ clients, transactions }: Props) {
           )}
         </div>
 
-        {/* Profitability */}
         <div className="bg-card border border-border rounded-xl p-4">
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp className="w-5 h-5 text-emerald-400" />
