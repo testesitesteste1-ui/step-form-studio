@@ -42,7 +42,7 @@ export default function Login() {
       <div className="w-full max-w-sm animate-fade-in">
         {/* Logo */}
         <div className="flex flex-col items-center mb-10">
-          <img src={logo} alt="NeuraSys" className="w-24 h-24 object-contain mb-3" />
+          <img src={logo} alt="Ex Eventos" className="w-24 h-24 object-contain mb-3" />
           <p className="text-muted-foreground text-sm">Acesse sua conta</p>
         </div>
 

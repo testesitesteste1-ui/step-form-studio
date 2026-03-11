@@ -5,7 +5,7 @@ export default function LoadingScreen() {
     <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-6">
       <img
         src={logo}
-        alt="NeuraSys"
+        alt="Ex Eventos"
         className="w-28 h-28 object-contain animate-logo-pulse"
       />
       <div className="w-48 h-1 rounded-full overflow-hidden bg-muted">
