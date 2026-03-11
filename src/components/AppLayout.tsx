@@ -40,8 +40,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       >
         {/* Logo */}
         <div className="flex items-center gap-3 px-4 h-16 border-b border-border shrink-0">
-          <img src={logo} alt="NeuraSys" className="w-8 h-8 object-contain shrink-0" />
-          {!collapsed && <span className="text-lg font-bold text-foreground tracking-tight">NeuraSys</span>}
+          <img src={logo} alt="Ex Eventos" className="w-8 h-8 object-contain shrink-0" />
+          {!collapsed && <span className="text-lg font-bold text-foreground tracking-tight">Ex Eventos</span>}
         </div>
 
         {/* Nav */}
