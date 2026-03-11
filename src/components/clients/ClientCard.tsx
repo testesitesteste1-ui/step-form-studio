@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
-import { Star, Lock, MessageCircle, Mail, ChevronRight, Target, Megaphone, MapPin, Globe, Zap, Calendar } from "lucide-react";
-import { Client, CLIENT_STATUS_LABELS, CLIENT_STATUS_COLORS, ClientServiceType, SERVICE_TYPE_LABELS, getAvatarColor, getInitials, formatCurrency, getDaysSince } from "@/lib/clients-data";
+import { Star, Lock, MessageCircle, Mail, ChevronRight, Building2, UserCheck, Calendar, MapPin } from "lucide-react";
+import { Client, CLIENT_STATUS_LABELS, CLIENT_STATUS_COLORS, CLIENT_TYPE_LABELS, getAvatarColor, getInitials, formatCurrency, getDaysSince } from "@/lib/clients-data";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -10,27 +10,10 @@ interface Props {
   onToggleFavorite: () => void;
 }
 
-const SERVICE_ICONS: Record<ClientServiceType, React.ReactNode> = {
-  trafego_pago: <Target className="w-3 h-3" />,
-  social_media: <Megaphone className="w-3 h-3" />,
-  google_meu_negocio: <MapPin className="w-3 h-3" />,
-  sites: <Globe className="w-3 h-3" />,
-  automacoes: <Zap className="w-3 h-3" />,
-};
-
-const SERVICE_BADGE_COLORS: Record<ClientServiceType, string> = {
-  trafego_pago: 'bg-amber-500/15 text-amber-400',
-  social_media: 'bg-pink-500/15 text-pink-400',
-  google_meu_negocio: 'bg-blue-500/15 text-blue-400',
-  sites: 'bg-cyan-500/15 text-cyan-400',
-  automacoes: 'bg-violet-500/15 text-violet-400',
-};
-
 export default function ClientCard({ client, onOpen, onEdit, onToggleFavorite }: Props) {
   const totalValue = client.projects.reduce((sum, p) => sum + (p.value || 0), 0);
-  const totalPaid = client.projects.reduce((sum, p) => sum + ((p.payments || []).reduce((s, pay) => s + pay.value, 0)), 0);
   const avatarColor = getAvatarColor(client.name);
-  const services = client.services && client.services.length > 0 ? client.services : [];
+  const condCount = (client.condominios || []).length;
   const activeProjects = client.projects.filter(p => p.status === 'ativo').length;
   const daysSinceContact = getDaysSince(client.lastContact);
 
@@ -48,7 +31,7 @@ export default function ClientCard({ client, onOpen, onEdit, onToggleFavorite }:
           : "border-border/60 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5"
       )}
     >
-      {/* Top accent line */}
+      {/* Top accent */}
       <div className={cn(
         "h-0.5 w-full",
         client.status === 'ativo' ? 'bg-emerald-500' :
@@ -59,7 +42,7 @@ export default function ClientCard({ client, onOpen, onEdit, onToggleFavorite }:
       )} />
 
       <div className="p-4">
-        {/* Row 1: Avatar + Name + Actions */}
+        {/* Row 1: Avatar + Name */}
         <div className="flex items-start gap-3 mb-3">
           <div className={cn(
             "w-11 h-11 rounded-lg bg-gradient-to-br flex items-center justify-center text-white font-bold text-sm shrink-0",
@@ -72,19 +55,23 @@ export default function ClientCard({ client, onOpen, onEdit, onToggleFavorite }:
               <h3 className="text-foreground font-semibold text-sm truncate">{client.name}</h3>
               {client.private && <Lock className="w-3 h-3 text-destructive shrink-0" />}
             </div>
-            <p className="text-muted-foreground text-xs truncate">{client.company || client.segment || '—'}</p>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              {client.type === 'administradora'
+                ? <Building2 className="w-3 h-3 text-muted-foreground" />
+                : <UserCheck className="w-3 h-3 text-muted-foreground" />
+              }
+              <p className="text-muted-foreground text-xs">{CLIENT_TYPE_LABELS[client.type]}</p>
+            </div>
           </div>
-          <div className="flex items-center gap-0.5 shrink-0">
-            <button
-              onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
-              className="p-1 rounded-md hover:bg-secondary/80 transition-colors"
-            >
-              <Star className={cn("w-3.5 h-3.5", client.favorite ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground/40")} />
-            </button>
-          </div>
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
+            className="p-1 rounded-md hover:bg-secondary/80 transition-colors shrink-0"
+          >
+            <Star className={cn("w-3.5 h-3.5", client.favorite ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground/40")} />
+          </button>
         </div>
 
-        {/* Row 2: Status + Last contact */}
+        {/* Row 2: Status + Contact + Type info */}
         <div className="flex items-center justify-between mb-3">
           <span className={cn("text-[10px] px-2 py-0.5 rounded-md font-medium", CLIENT_STATUS_COLORS[client.status])}>
             {CLIENT_STATUS_LABELS[client.status]}
@@ -98,38 +85,35 @@ export default function ClientCard({ client, onOpen, onEdit, onToggleFavorite }:
           </span>
         </div>
 
-        {/* Row 3: Service badges */}
-        {services.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-3">
-            {services.map(s => (
-              <span key={s} className={cn("text-[9px] px-1.5 py-0.5 rounded-md font-medium inline-flex items-center gap-0.5", SERVICE_BADGE_COLORS[s])}>
-                {SERVICE_ICONS[s]} {SERVICE_TYPE_LABELS[s]}
-              </span>
-            ))}
-          </div>
-        )}
+        {/* Row 3: Condomínios count + Contact person */}
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {client.type === 'administradora' && (
+            <span className="text-[9px] px-1.5 py-0.5 rounded-md font-medium inline-flex items-center gap-0.5 bg-amber-500/15 text-amber-400">
+              <MapPin className="w-3 h-3" /> {condCount} condomínio{condCount !== 1 ? 's' : ''}
+            </span>
+          )}
+          {client.contactName && (
+            <span className="text-[9px] px-1.5 py-0.5 rounded-md font-medium bg-secondary text-muted-foreground">
+              {client.type === 'sindico' ? '👤' : '📋'} {client.contactName}
+            </span>
+          )}
+        </div>
 
-        {/* Row 4: Financial summary + Projects */}
+        {/* Row 4: Financial + Actions */}
         <div className="flex items-center justify-between pt-3 border-t border-border/40">
           <div>
             <p className="text-foreground font-bold text-sm">{formatCurrency(totalValue)}</p>
             <p className="text-muted-foreground text-[9px]">
-              {totalPaid > 0 ? `${formatCurrency(totalPaid)} pago` : 'sem pagamentos'}
+              {activeProjects > 0 ? `${activeProjects} projeto${activeProjects > 1 ? 's' : ''} ativo${activeProjects > 1 ? 's' : ''}` : 'sem projetos'}
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            {activeProjects > 0 && (
-              <span className="text-[10px] text-emerald-400 font-medium">
-                {activeProjects} {activeProjects === 1 ? 'projeto' : 'projetos'}
-              </span>
-            )}
-            {/* Quick actions */}
+          <div className="flex items-center gap-0.5">
             <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-              {client.whatsapp && (
+              {client.phone && (
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    window.open(`https://wa.me/${client.whatsapp.replace(/\D/g, '')}`, '_blank');
+                    window.open(`https://wa.me/${client.phone.replace(/\D/g, '')}`, '_blank');
                   }}
                   className="p-1 rounded-md hover:bg-emerald-500/20 transition-colors"
                 >
