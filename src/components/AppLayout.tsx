@@ -106,8 +106,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <button onClick={() => setMobileOpen(true)}>
             <Menu className="w-5 h-5 text-foreground" />
           </button>
-          <img src={logo} alt="NeuraSys" className="w-7 h-7 object-contain" />
-          <span className="text-base font-bold text-foreground">NeuraSys</span>
+          <img src={logo} alt="Ex Eventos" className="w-7 h-7 object-contain" />
+          <span className="text-base font-bold text-foreground">Ex Eventos</span>
         </header>
 
         <main className="flex-1 overflow-auto">
