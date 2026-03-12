@@ -12,6 +12,7 @@ import Finance from "./pages/Finance";
 import Projects from "./pages/Projects";
 import CalendarPage from "./pages/CalendarPage";
 import Orcamentos from "./pages/Orcamentos";
+import GeradorOrcamento from "./pages/GeradorOrcamento";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
