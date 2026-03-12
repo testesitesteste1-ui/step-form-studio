@@ -12,6 +12,7 @@ const navItems = [
   { title: "Dashboard", path: "/", icon: LayoutDashboard },
   { title: "Leads & Propostas", path: "/leads", icon: Users },
   { title: "Clientes", path: "/clients", icon: UserCheck },
+  { title: "Orçamentos", path: "/orcamentos", icon: Package },
   { title: "Projetos", path: "/projects", icon: FolderKanban },
   { title: "Calendário", path: "/calendar", icon: CalendarDays },
   { title: "Financeiro", path: "/finance", icon: DollarSign },
