@@ -11,6 +11,7 @@ import Clients from "./pages/Clients";
 import Finance from "./pages/Finance";
 import Projects from "./pages/Projects";
 import CalendarPage from "./pages/CalendarPage";
+import Orcamentos from "./pages/Orcamentos";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
