@@ -13,7 +13,7 @@ const navItems = [
   { title: "Leads & Propostas", path: "/leads", icon: Users },
   { title: "Clientes", path: "/clients", icon: UserCheck },
   { title: "Orçamentos", path: "/orcamentos", icon: Package },
-  { title: "Projetos", path: "/projects", icon: FolderKanban },
+  { title: "Gerador de Orçamento", path: "/gerador-orcamento", icon: FileText },
   { title: "Calendário", path: "/calendar", icon: CalendarDays },
   { title: "Financeiro", path: "/finance", icon: DollarSign },
 ];
