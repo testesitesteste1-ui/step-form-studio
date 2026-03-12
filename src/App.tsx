@@ -12,6 +12,7 @@ import Finance from "./pages/Finance";
 import Projects from "./pages/Projects";
 import CalendarPage from "./pages/CalendarPage";
 import Orcamentos from "./pages/Orcamentos";
+import GeradorOrcamento from "./pages/GeradorOrcamento";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -39,7 +40,7 @@ const App = () => (
           <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
           <Route path="/finance" element={<ProtectedRoute><Finance /></ProtectedRoute>} />
           <Route path="/orcamentos" element={<ProtectedRoute><Orcamentos /></ProtectedRoute>} />
-          <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
+          <Route path="/gerador-orcamento" element={<ProtectedRoute><GeradorOrcamento /></ProtectedRoute>} />
           <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

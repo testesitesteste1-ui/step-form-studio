@@ -2,8 +2,6 @@ import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea
 import { Lead, LeadStatus, STATUS_LABELS, STATUS_COLORS } from "@/lib/leads-data";
 import LeadCard from "./LeadCard";
 import { cn } from "@/lib/utils";
-import { ChevronDown } from "lucide-react";
-import { useState } from "react";
 
 const COLUMNS: LeadStatus[] = ['novo', 'em_contato', 'proposta_enviada', 'negociacao', 'ganho', 'perdido'];
 
@@ -15,75 +13,64 @@ interface Props {
 }
 
 export default function KanbanBoard({ leads, onStatusChange, onOpenLead, onDeleteLead }: Props) {
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
-
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
     const newStatus = result.destination.droppableId as LeadStatus;
     onStatusChange(result.draggableId, newStatus);
   };
 
-  const toggle = (status: string) => {
-    setCollapsed(prev => ({ ...prev, [status]: !prev[status] }));
-  };
-
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
-      <div className="space-y-3">
+      <div className="flex gap-3 overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
         {COLUMNS.map(status => {
           const columnLeads = leads.filter(l => l.status === status);
-          const isCollapsed = collapsed[status];
-
           return (
-            <div key={status} className="bg-muted/20 rounded-xl border border-border overflow-hidden">
-              {/* Column header */}
-              <button
-                onClick={() => toggle(status)}
-                className="w-full flex items-center gap-2 px-4 py-3 hover:bg-muted/30 transition-colors"
-              >
-                <ChevronDown className={cn("w-4 h-4 text-muted-foreground transition-transform", isCollapsed && "-rotate-90")} />
-                <span className={cn("text-xs font-semibold px-2 py-1 rounded-md border", STATUS_COLORS[status])}>
-                  {STATUS_LABELS[status]}
-                </span>
-                <span className="text-xs text-muted-foreground">{columnLeads.length}</span>
-              </button>
-
-              {/* Cards */}
-              {!isCollapsed && (
-                <Droppable droppableId={status}>
-                  {(provided, snapshot) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.droppableProps}
-                      className={cn(
-                        "px-3 pb-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 min-h-[60px] transition-colors",
-                        snapshot.isDraggingOver && "bg-primary/5"
-                      )}
-                    >
-                      {columnLeads.map((lead, index) => (
-                        <Draggable key={lead.id} draggableId={lead.id} index={index}>
-                          {(provided, snapshot) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                              className={cn(snapshot.isDragging && "opacity-80 rotate-1")}
-                            >
-                              <LeadCard
-                                lead={lead}
-                                onClick={() => onOpenLead(lead)}
-                                onDelete={onDeleteLead}
-                              />
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
-                    </div>
+            <Droppable droppableId={status} key={status}>
+              {(provided, snapshot) => (
+                <div
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                  className={cn(
+                    "bg-muted/20 rounded-xl border border-border p-2.5 min-w-[220px] flex-shrink-0 flex-1 transition-colors",
+                    snapshot.isDraggingOver && "bg-primary/5 border-primary/30"
                   )}
-                </Droppable>
+                  style={{ minHeight: 200 }}
+                >
+                  {/* Column header */}
+                  <div className="flex items-center justify-between mb-3 px-1">
+                    <span className={cn("text-[10px] font-semibold px-2 py-1 rounded-md border", STATUS_COLORS[status])}>
+                      {STATUS_LABELS[status]}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground bg-secondary rounded-full px-2 py-0.5">
+                      {columnLeads.length}
+                    </span>
+                  </div>
+
+                  {/* Cards */}
+                  <div className="space-y-2">
+                    {columnLeads.map((lead, index) => (
+                      <Draggable key={lead.id} draggableId={lead.id} index={index}>
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            className={cn(snapshot.isDragging && "opacity-80 rotate-1")}
+                          >
+                            <LeadCard
+                              lead={lead}
+                              onClick={() => onOpenLead(lead)}
+                              onDelete={onDeleteLead}
+                            />
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                </div>
               )}
-            </div>
+            </Droppable>
           );
         })}
       </div>

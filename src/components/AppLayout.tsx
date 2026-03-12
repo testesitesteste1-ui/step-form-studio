@@ -3,7 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { NavLink, useLocation } from "react-router-dom";
 import logo from "@/assets/logo.png";
 import {
-  LayoutDashboard, Users, UserCheck, DollarSign, FolderKanban, CalendarDays, ChevronLeft, ChevronRight, LogOut, Menu, X, Package
+  LayoutDashboard, Users, UserCheck, DollarSign, FileText, CalendarDays, ChevronLeft, ChevronRight, LogOut, Menu, X, Package
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -13,7 +13,7 @@ const navItems = [
   { title: "Leads & Propostas", path: "/leads", icon: Users },
   { title: "Clientes", path: "/clients", icon: UserCheck },
   { title: "Orçamentos", path: "/orcamentos", icon: Package },
-  { title: "Projetos", path: "/projects", icon: FolderKanban },
+  { title: "Gerador de Orçamento", path: "/gerador-orcamento", icon: FileText },
   { title: "Calendário", path: "/calendar", icon: CalendarDays },
   { title: "Financeiro", path: "/finance", icon: DollarSign },
 ];
