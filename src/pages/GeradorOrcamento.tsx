@@ -214,7 +214,7 @@ export default function GeradorOrcamento() {
           </div>
 
           <div className="space-y-2">
-            {ITEMS_CATALOG.map(item => {
+            {ORCAMENTO_CATALOG.map(item => {
               const current = items[item.id] || { qty: 0, price: 0 };
               const isActive = current.qty > 0;
               return (
