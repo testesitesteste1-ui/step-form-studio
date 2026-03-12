@@ -4,7 +4,7 @@ import { useClients } from "@/hooks/useClients";
 import { useOrcamentos } from "@/hooks/useOrcamentos";
 import { useAuth } from "@/hooks/useAuth";
 import { Client, Condominio, formatCurrency, newId } from "@/lib/clients-data";
-import { ITEMS_CATALOG, Orcamento, OrcamentoItem, ORCAMENTO_STATUS_LABELS } from "@/lib/orcamentos-data";
+import { ORCAMENTO_CATALOG, Orcamento, OrcamentoItem, ORCAMENTO_STATUS_LABELS } from "@/lib/orcamentos-data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
