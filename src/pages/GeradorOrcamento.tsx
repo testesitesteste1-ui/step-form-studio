@@ -45,7 +45,7 @@ export default function GeradorOrcamento() {
     return Object.entries(items)
       .filter(([, v]) => v.qty > 0)
       .map(([id, v]) => {
-        const cat = ITEMS_CATALOG.find(c => c.id === id);
+        const cat = ORCAMENTO_CATALOG.find(c => c.id === id);
         return { id, name: cat?.name || id, quantity: v.qty, unitPrice: v.price };
       });
   }, [items]);
